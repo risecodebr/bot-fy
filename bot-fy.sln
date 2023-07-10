@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33801.468
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bot-fy", "bot-fy\bot-fy.csproj", "{8930495F-3D1B-488B-852E-3A1A71D5F4FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens de Solução", "{73A79CD5-97E0-4A43-AB80-26EA7BDE030D}"
+	ProjectSection(SolutionItems) = preProject
+		.env = .env
+		.env.example = .env.example
+		docker-compose.yml = docker-compose.yml
+		update.sh = update.sh
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8930495F-3D1B-488B-852E-3A1A71D5F4FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8930495F-3D1B-488B-852E-3A1A71D5F4FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8930495F-3D1B-488B-852E-3A1A71D5F4FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8930495F-3D1B-488B-852E-3A1A71D5F4FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FB743A54-452E-4053-A26D-97C7AEDB9A07}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>bot_fy</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-01631" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01631" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01631" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="5.0.0-nightly-01631" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="YoutubeExplode" Version="6.2.16" />
+    <PackageReference Include="YoutubeExplode.Converter" Version="6.2.16" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+﻿version: "3.7"
+name: bot-fy
+services:
+   bot-fy:
+      container_name: bot-fy
+      image: bot-fy
+      env_file:
+        - .env
+      build: 
+          context: ./bot-fy
+          dockerfile: docker/Dockerfile
+      restart: always
+      environment:
+          - TZ=America/Sao_Paulo
+      deploy:
+          resources:
+              limits:
+                  memory: 1G

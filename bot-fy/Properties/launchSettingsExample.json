@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "bot_fy": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DISCORD_TOKEN": ""
+      }
+    }
+  }
+}
