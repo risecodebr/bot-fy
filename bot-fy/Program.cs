@@ -3,6 +3,7 @@ using bot_fy.Discord;
 using bot_fy.Service;
 using bot_fy.Utils;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.Logging;
@@ -32,8 +33,8 @@ namespace bot_fy
             Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
             VoiceNextExtension vnext = Discord.UseVoiceNext();
             SlashCommandsExtension slash = Discord.UseSlashCommands();
-            await Discord.ConnectAsync();
             slash.RegisterCommands<MusicCommand>();
+            await Discord.ConnectAsync();
             await Task.Delay(-1);
         }
     }
