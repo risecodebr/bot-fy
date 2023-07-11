@@ -18,6 +18,7 @@ namespace bot_fy.Commands
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
         {
             if(!await ctx.ValidateChannels()) return;
+            Console.WriteLine("Play");
 
             List<string> videos = await youtubeService.GetResultsAsync(termo);
             if (!videos.Any())
@@ -33,8 +34,12 @@ namespace bot_fy.Commands
 
             videos.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
 
+            CancellationTokenSource cancellationTokenSource = new();
+            CancellationToken cancellationToken = cancellationTokenSource.Token;
+
             VoiceNextExtension vnext = ctx.Client.GetVoiceNext();
             VoiceNextConnection connection = vnext.GetConnection(ctx.Guild);
+
             VoiceTransmitSink transmit;
 
             if (connection == null)
@@ -57,6 +62,16 @@ namespace bot_fy.Commands
             }
             transmit = connection.GetTransmitSink();
 
+            connection.UserLeft += async (v, u) =>
+            {
+                if (u.User.Id == ctx.Guild.CurrentMember.Id)
+                {
+                    Console.WriteLine("Saio do canal de voz");
+                    cancellationTokenSource.Cancel();
+                    await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
+                }
+            };
+
             for (int i = 0; i < track[ctx.Guild.Id].Count; i = 0)
             {
                 string videoid = track[ctx.Guild.Id].Dequeue();
@@ -64,7 +79,7 @@ namespace bot_fy.Commands
                 await audioService.DownloadAudioAsync(videoid, directory[ctx.Guild.Id]);
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
                 await ctx.Channel.SendNewMusicPlayAsync(videoid);
-                await pcm.CopyToAsync(transmit);
+                await pcm.CopyToAsync(transmit, null, cancellationToken);
                 File.Delete(directory[ctx.Guild.Id]);
                 directory[ctx.Guild.Id] = "";
                 await pcm.DisposeAsync();

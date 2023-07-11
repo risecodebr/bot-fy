@@ -33,7 +33,7 @@ namespace bot_fy
             VoiceNextExtension vnext = Discord.UseVoiceNext();
             SlashCommandsExtension slash = Discord.UseSlashCommands();
             await Discord.ConnectAsync();
-            slash.RegisterCommands<MusicCommand>(880904935787601960);
+            slash.RegisterCommands<MusicCommand>();
             await Task.Delay(-1);
         }
     }
