@@ -14,6 +14,8 @@ namespace bot_fy.Commands
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
 
+        private static event EventHandler<ulong> MusicSkipped;
+
         [SlashCommand("play", "Reproduza sua musica ou playlist")]
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
         {
@@ -45,9 +47,7 @@ namespace bot_fy.Commands
             if (connection == null)
             {
                 DiscordChannel channel = ctx.Member.VoiceState?.Channel;
-                VoiceNextConnection con = await channel.ConnectAsync();
-                Console.WriteLine(con.TargetChannel.Name);
-                connection = vnext.GetConnection(ctx.Guild);
+                connection = await channel.ConnectAsync();
             }
             if (connection.IsPlaying)
             {
@@ -66,9 +66,17 @@ namespace bot_fy.Commands
             {
                 if (u.User.Id == ctx.Guild.CurrentMember.Id)
                 {
-                    Console.WriteLine("Saio do canal de voz");
                     cancellationTokenSource.Cancel();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
+                }
+            };
+
+            MusicSkipped += (sender, guildId) =>
+            {
+                if (guildId == ctx.Guild.Id)
+                {
+                    cancellationTokenSource.Cancel();
+                    Console.WriteLine("Musica pulada");
                 }
             };
 
@@ -79,13 +87,27 @@ namespace bot_fy.Commands
                 await audioService.DownloadAudioAsync(videoid, directory[ctx.Guild.Id]);
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
                 await ctx.Channel.SendNewMusicPlayAsync(videoid);
+
                 await pcm.CopyToAsync(transmit, null, cancellationToken);
+                
+                Console.WriteLine("canceled");
                 File.Delete(directory[ctx.Guild.Id]);
+                Console.WriteLine("deleted");
                 directory[ctx.Guild.Id] = "";
+                Console.WriteLine("empty");
                 await pcm.DisposeAsync();
             }
             connection.Disconnect();
 
+        }
+
+        [SlashCommand("skip", "Pule a musica atual")]
+        public async Task Skip(InteractionContext ctx)
+        {
+           Console.WriteLine("Skip");
+           MusicSkipped(this, ctx.Guild.Id);
+           Console.WriteLine("Skip2");
+           await ctx.CreateResponseAsync("Musica pulada");
         }
     }
 }

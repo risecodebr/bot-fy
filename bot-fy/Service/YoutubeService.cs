@@ -13,10 +13,10 @@ namespace bot_fy.Service
 
         public async Task<List<string>> GetResultsAsync(string termo)
         {
-            if (!termo.Contains("youtu.be/") || !termo.Contains("www.youtube.com"))
+            /*if (!termo.Contains("youtu.be/") || !termo.Contains("www.youtube.com"))
             {
                 return await GetVideoByTermAsync(termo);
-            }
+            }*/
             if (termo.Contains("playlist?list"))
             {
                 return await GetPlayListVideosAsync(termo);

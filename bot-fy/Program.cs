@@ -33,7 +33,7 @@ namespace bot_fy
             Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
             VoiceNextExtension vnext = Discord.UseVoiceNext();
             SlashCommandsExtension slash = Discord.UseSlashCommands();
-            slash.RegisterCommands<MusicCommand>();
+            slash.RegisterCommands<MusicCommand>(880904935787601960);
             await Discord.ConnectAsync();
             await Task.Delay(-1);
         }
