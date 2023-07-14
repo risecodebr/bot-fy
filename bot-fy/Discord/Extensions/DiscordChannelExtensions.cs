@@ -1,7 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using YoutubeExplode;
 
-namespace bot_fy.Service
+namespace bot_fy.Discord.Extensions
 {
     public static class NotificationsDiscordChannelExtensions
     {

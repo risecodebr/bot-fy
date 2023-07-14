@@ -90,7 +90,7 @@ namespace bot_fy.Commands
                 await ctx.Channel.SendNewMusicPlayAsync(videoid);
 
                 await pcm.CopyToAsync(transmit, null, cancellationToken);
-                
+
                 Console.WriteLine("canceled");
                 File.Delete(directory[ctx.Guild.Id]);
                 Console.WriteLine("deleted");
@@ -105,10 +105,10 @@ namespace bot_fy.Commands
         [SlashCommand("skip", "Pule a musica atual")]
         public async Task Skip(InteractionContext ctx)
         {
-           Console.WriteLine("Skip");
-           MusicSkipped(this, ctx.Guild.Id);
-           Console.WriteLine("Skip2");
-           await ctx.CreateResponseAsync("Musica pulada");
+            Console.WriteLine("Skip");
+            MusicSkipped(this, ctx.Guild.Id);
+            Console.WriteLine("Skip2");
+            await ctx.CreateResponseAsync("Musica pulada");
         }
     }
 }

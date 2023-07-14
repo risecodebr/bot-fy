@@ -1,8 +1,6 @@
-﻿using DSharpPlus.Entities;
-using YoutubeExplode;
+﻿using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Playlists;
-using YoutubeExplode.Videos;
 
 namespace bot_fy.Service
 {

@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using YoutubeExplode;
 using YoutubeExplode.Converter;
-using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
 namespace bot_fy.Service
