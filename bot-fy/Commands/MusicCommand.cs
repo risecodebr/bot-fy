@@ -4,6 +4,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
 using YoutubeExplode.Playlists;
+using YoutubeExplode.Videos;
 
 namespace bot_fy.Commands
 {
@@ -20,12 +21,11 @@ namespace bot_fy.Commands
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
         {
             if(!await ctx.ValidateChannels()) return;
-            Console.WriteLine("Play");
 
-            List<string> videos = await youtubeService.GetResultsAsync(termo);
+            List<string> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
             if (!videos.Any())
             {
-                await ctx.CreateResponseAsync("Nenhum resultado encontrado para a busca");
+                await ctx.CreateResponseAsync("Nenhum Video Encontrado"); 
                 return;
             }
 
@@ -35,9 +35,6 @@ namespace bot_fy.Commands
             }
 
             videos.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
-
-            CancellationTokenSource cancellationTokenSource = new();
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
 
             VoiceNextExtension vnext = ctx.Client.GetVoiceNext();
             VoiceNextConnection connection = vnext.GetConnection(ctx.Guild);
@@ -49,16 +46,19 @@ namespace bot_fy.Commands
                 DiscordChannel channel = ctx.Member.VoiceState?.Channel;
                 connection = await channel.ConnectAsync();
             }
-            if (connection.IsPlaying)
-            {
-                await ctx.CreateResponseAsync("Musica adicionada a fila");
-                if (videos.Count == 1) await ctx.Channel.SendNewMusicAsync(videos[0]);
-                else await ctx.Channel.SendNewPlaylistAsync(PlaylistId.Parse(termo));
-                return;
-            }
             else
             {
-                await ctx.CreateResponseAsync("Reproduzindo musica");
+                if (videos.Count == 1)
+                {
+                    Video video = await youtubeService.GetVideoAsync(videos[0]);
+                    await ctx.Channel.SendNewMusicAsync(video);
+                }
+                else
+                {
+                    Playlist playlist = await youtubeService.GetPlaylistAsync(termo);
+                    await ctx.Channel.SendNewPlaylistAsync(playlist);
+                }
+                return;
             }
             transmit = connection.GetTransmitSink();
 
@@ -66,7 +66,6 @@ namespace bot_fy.Commands
             {
                 if (u.User.Id == ctx.Guild.CurrentMember.Id)
                 {
-                    cancellationTokenSource.Cancel();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
                 }
             };
@@ -75,27 +74,27 @@ namespace bot_fy.Commands
             {
                 if (guildId == ctx.Guild.Id)
                 {
-                    cancellationTokenSource.Cancel();
                     Console.WriteLine("Musica pulada");
                 }
             };
-
 
             for (int i = 0; i < track[ctx.Guild.Id].Count; i = 0)
             {
                 string videoid = track[ctx.Guild.Id].Dequeue();
                 directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{videoid}.mp3";
+                Video video = await youtubeService.GetVideoAsync(videoid);
+                await ctx.Channel.SendNewMusicPlayAsync(video);
                 await audioService.DownloadAudioAsync(videoid, directory[ctx.Guild.Id]);
+
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
                 await ctx.Channel.SendNewMusicPlayAsync(videoid);
 
                 await pcm.CopyToAsync(transmit, null, cancellationToken);
-
+                
                 Console.WriteLine("canceled");
                 File.Delete(directory[ctx.Guild.Id]);
-                Console.WriteLine("deleted");
                 directory[ctx.Guild.Id] = "";
-                Console.WriteLine("empty");
+
                 await pcm.DisposeAsync();
             }
             connection.Disconnect();
