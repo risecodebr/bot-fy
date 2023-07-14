@@ -9,8 +9,8 @@ namespace bot_fy.Commands
 {
     public class MusicCommand : ApplicationCommandModule
     {
-        private readonly Dictionary<ulong, Queue<string>> track = new();
-        private readonly Dictionary<ulong, string> directory = new();
+        private static Dictionary<ulong, Queue<string>> track = new();
+        private static Dictionary<ulong, string> directory = new();
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
 
@@ -79,6 +79,7 @@ namespace bot_fy.Commands
                     Console.WriteLine("Musica pulada");
                 }
             };
+
 
             for (int i = 0; i < track[ctx.Guild.Id].Count; i = 0)
             {
