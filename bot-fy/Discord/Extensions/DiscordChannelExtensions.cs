@@ -1,5 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using YoutubeExplode;
+using YoutubeExplode.Playlists;
+using YoutubeExplode.Videos;
 
 namespace bot_fy.Service
 {
@@ -7,36 +9,41 @@ namespace bot_fy.Service
     {
         private static readonly YoutubeClient youtube = new();
 
-        public static async Task<DiscordMessage> SendNewMusicAsync(this DiscordChannel channel, string video_id)
+        public static async Task<DiscordMessage> SendNewMusicAsync(this DiscordChannel channel, Video video)
         {
             DiscordEmbedBuilder embed = new()
             {
-                Title = "Nova música adicionada",
-                Description = $"[Clique aqui para ouvir](https://www.youtube.com/watch?v={video_id})",
+                Title = video.Title,
+                Description = $"Tempo: `{video.Duration.Value.Minutes}` minutos",
                 Color = DiscordColor.Green
             };
+            embed.Url = video.Url;
+            embed.WithThumbnail(video.Thumbnails.First().Url);
             return await channel.SendMessageAsync(embed);
         }
 
-        public static async Task<DiscordMessage> SendNewPlaylistAsync(this DiscordChannel channel, string playlist_id)
+        public static async Task<DiscordMessage> SendNewPlaylistAsync(this DiscordChannel channel, Playlist playlist)
         {
             DiscordEmbedBuilder embed = new()
             {
-                Title = "Nova playlist adicionada",
-                Description = $"[Clique aqui para ouvir](https://www.youtube.com/playlist?list={playlist_id})",
+                Title = playlist.Title,
                 Color = DiscordColor.Green
             };
+            embed.Url = playlist.Url;
+            embed.WithThumbnail(playlist.Thumbnails.First().Url);
             return await channel.SendMessageAsync(embed);
         }
 
-        public static async Task<DiscordMessage> SendNewMusicPlayAsync(this DiscordChannel channel, string video_id)
+        public static async Task<DiscordMessage> SendNewMusicPlayAsync(this DiscordChannel channel, Video video)
         {
             DiscordEmbedBuilder embed = new()
             {
-                Title = "Nova musica tocando...",
-                Description = $"[Clique aqui para ouvir](https://www.youtube.com/watch?v={video_id})",
+                Title = video.Title,
+                Description = $"Tempo: `{video.Duration.Value.Minutes}` minutos",
                 Color = DiscordColor.Green
             };
+            embed.Url = video.Url;
+            embed.WithThumbnail(video.Thumbnails.First().Url);
             return await channel.SendMessageAsync(embed);
         }
     }
