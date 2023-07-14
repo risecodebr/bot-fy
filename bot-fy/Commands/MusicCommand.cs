@@ -15,7 +15,7 @@ namespace bot_fy.Commands
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
 
-        private static event EventHandler<ulong> MusicSkipped;
+        //private static event EventHandler<ulong> MusicSkipped;
 
         [SlashCommand("play", "Reproduza sua musica ou playlist")]
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
@@ -43,21 +43,11 @@ namespace bot_fy.Commands
 
             if (connection == null)
             {
-                DiscordChannel channel = ctx.Member.VoiceState?.Channel;
+                DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
                 connection = await channel.ConnectAsync();
             }
             else
             {
-                if (videos.Count == 1)
-                {
-                    Video video = await youtubeService.GetVideoAsync(videos[0]);
-                    await ctx.Channel.SendNewMusicAsync(video);
-                }
-                else
-                {
-                    Playlist playlist = await youtubeService.GetPlaylistAsync(termo);
-                    await ctx.Channel.SendNewPlaylistAsync(playlist);
-                }
                 return;
             }
             transmit = connection.GetTransmitSink();
@@ -70,28 +60,16 @@ namespace bot_fy.Commands
                 }
             };
 
-            MusicSkipped += (sender, guildId) =>
-            {
-                if (guildId == ctx.Guild.Id)
-                {
-                    Console.WriteLine("Musica pulada");
-                }
-            };
-
             for (int i = 0; i < track[ctx.Guild.Id].Count; i = 0)
             {
-                string videoid = track[ctx.Guild.Id].Dequeue();
-                directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{videoid}.mp3";
-                Video video = await youtubeService.GetVideoAsync(videoid);
-                await ctx.Channel.SendNewMusicPlayAsync(video);
-                await audioService.DownloadAudioAsync(videoid, directory[ctx.Guild.Id]);
+                string video_id = track[ctx.Guild.Id].Dequeue();
+                directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video_id}.mp3";
+                await audioService.DownloadAudioAsync(video_id, directory[ctx.Guild.Id]);
+                await ctx.Channel.SendNewMusicPlayAsync(video_id);
 
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
-                await ctx.Channel.SendNewMusicPlayAsync(videoid);
-
-                await pcm.CopyToAsync(transmit, null, cancellationToken);
+                await pcm.CopyToAsync(transmit, null);
                 
-                Console.WriteLine("canceled");
                 File.Delete(directory[ctx.Guild.Id]);
                 directory[ctx.Guild.Id] = "";
 
@@ -101,13 +79,11 @@ namespace bot_fy.Commands
 
         }
 
-        [SlashCommand("skip", "Pule a musica atual")]
+        /*[SlashCommand("skip", "Pule a musica atual")]
         public async Task Skip(InteractionContext ctx)
         {
-            Console.WriteLine("Skip");
             MusicSkipped(this, ctx.Guild.Id);
-            Console.WriteLine("Skip2");
             await ctx.CreateResponseAsync("Musica pulada");
-        }
+        }*/
     }
 }
