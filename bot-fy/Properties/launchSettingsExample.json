@@ -3,7 +3,8 @@
     "bot_fy": {
       "commandName": "Project",
       "environmentVariables": {
-        "DISCORD_TOKEN": ""
+        "DISCORD_TOKEN": "",
+        "URL_FFMPEG": ""
       }
     }
   }
