@@ -47,7 +47,6 @@ namespace bot_fy.Commands
             {
                 DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
                 connection = await channel.ConnectAsync();
-                await channel.UpdateCurrentUserVoiceStateAsync(true);
             }
             else
             {
