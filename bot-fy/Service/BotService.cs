@@ -9,20 +9,25 @@ namespace bot_fy.Service
             if (!Directory.Exists("ffmpeg"))
             {
                 Directory.CreateDirectory("ffmpeg");
-                if (!File.Exists("ffmpeg/ffmpeg.exe"))
-                {
-                    Log.Information("Downloading ffmpeg");
-                    HttpClient client = new();
-                    byte[] file = await client.GetByteArrayAsync("https://cdn.discordapp.com/attachments/958820650410213436/1127666156627578940/ffmpeg.exe");
-                    File.WriteAllBytes("ffmpeg/ffmpeg.exe", file);
-
-                }
+                Log.Information("Created ffmpeg directory");
+            }
+            if (!File.Exists("ffmpeg/ffmpeg.exe") && Environment.OSVersion.Platform != PlatformID.Unix)
+            {
+                Log.Information("Downloading ffmpeg");
+                HttpClient client = new();
+                byte[] file = await client.GetByteArrayAsync(Environment.GetEnvironmentVariable("URL_FFMPEG")!);
+                File.WriteAllBytes("ffmpeg/ffmpeg.exe", file);
+                Log.Information("Downloaded ffmpeg");
             }
             if (!Directory.Exists("music"))
             {
                 Directory.CreateDirectory("music");
+                Log.Information("Created music directory");
             }
-            Directory.GetFiles("music").ToList().ForEach(File.Delete);
+            foreach (string file in Directory.GetFiles("music"))
+            {
+                File.Delete(file);
+            }
             return;
         }
     }
