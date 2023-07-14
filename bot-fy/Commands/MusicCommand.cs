@@ -22,6 +22,8 @@ namespace bot_fy.Commands
         {
             if(!await ctx.ValidateChannels()) return;
 
+            await ctx.CreateResponseAsync("Buscando...");
+
             List<string> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
             if (!videos.Any())
             {
@@ -45,6 +47,7 @@ namespace bot_fy.Commands
             {
                 DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
                 connection = await channel.ConnectAsync();
+                await channel.UpdateCurrentUserVoiceStateAsync(true);
             }
             else
             {
