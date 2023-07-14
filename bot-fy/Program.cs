@@ -17,9 +17,9 @@ namespace bot_fy
 
         public static async Task Main()
         {
+            Log.Logger = new LoggerConfiguration().ConfigureLogger();
             await BotService.CreatePathsAsync();
 
-            Log.Logger = new LoggerConfiguration().ConfigureLogger();
 
             DiscordConfiguration cfg = new()
             {
