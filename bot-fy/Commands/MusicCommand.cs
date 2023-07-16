@@ -4,26 +4,30 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
 using YoutubeExplode.Playlists;
+using YoutubeExplode.Videos;
 
 namespace bot_fy.Commands
 {
     public class MusicCommand : ApplicationCommandModule
     {
-        private readonly Dictionary<ulong, Queue<string>> track = new();
-        private readonly Dictionary<ulong, string> directory = new();
+        private static Dictionary<ulong, Queue<string>> track = new();
+        private static Dictionary<ulong, string> directory = new();
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
+
+        //private static event EventHandler<ulong> MusicSkipped;
 
         [SlashCommand("play", "Reproduza sua musica ou playlist")]
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
         {
             if(!await ctx.ValidateChannels()) return;
-            Console.WriteLine("Play");
 
-            List<string> videos = await youtubeService.GetResultsAsync(termo);
+            await ctx.CreateResponseAsync("Buscando...");
+
+            List<string> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
             if (!videos.Any())
             {
-                await ctx.CreateResponseAsync("Nenhum resultado encontrado para a busca");
+                await ctx.CreateResponseAsync("Nenhum Video Encontrado"); 
                 return;
             }
 
@@ -34,9 +38,6 @@ namespace bot_fy.Commands
 
             videos.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
 
-            CancellationTokenSource cancellationTokenSource = new();
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
-
             VoiceNextExtension vnext = ctx.Client.GetVoiceNext();
             VoiceNextConnection connection = vnext.GetConnection(ctx.Guild);
 
@@ -44,21 +45,12 @@ namespace bot_fy.Commands
 
             if (connection == null)
             {
-                DiscordChannel channel = ctx.Member.VoiceState?.Channel;
-                VoiceNextConnection con = await channel.ConnectAsync();
-                Console.WriteLine(con.TargetChannel.Name);
-                connection = vnext.GetConnection(ctx.Guild);
-            }
-            if (connection.IsPlaying)
-            {
-                await ctx.CreateResponseAsync("Musica adicionada a fila");
-                if (videos.Count == 1) await ctx.Channel.SendNewMusicAsync(videos[0]);
-                else await ctx.Channel.SendNewPlaylistAsync(PlaylistId.Parse(termo));
-                return;
+                DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
+                connection = await channel.ConnectAsync();
             }
             else
             {
-                await ctx.CreateResponseAsync("Reproduzindo musica");
+                return;
             }
             transmit = connection.GetTransmitSink();
 
@@ -66,26 +58,34 @@ namespace bot_fy.Commands
             {
                 if (u.User.Id == ctx.Guild.CurrentMember.Id)
                 {
-                    Console.WriteLine("Saio do canal de voz");
-                    cancellationTokenSource.Cancel();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
                 }
             };
 
             for (int i = 0; i < track[ctx.Guild.Id].Count; i = 0)
             {
-                string videoid = track[ctx.Guild.Id].Dequeue();
-                directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{videoid}.mp3";
-                await audioService.DownloadAudioAsync(videoid, directory[ctx.Guild.Id]);
+                string video_id = track[ctx.Guild.Id].Dequeue();
+                directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video_id}.mp3";
+                await audioService.DownloadAudioAsync(video_id, directory[ctx.Guild.Id]);
+                await ctx.Channel.SendNewMusicPlayAsync(video_id);
+
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
-                await ctx.Channel.SendNewMusicPlayAsync(videoid);
-                await pcm.CopyToAsync(transmit, null, cancellationToken);
+                await pcm.CopyToAsync(transmit, null);
+                
                 File.Delete(directory[ctx.Guild.Id]);
                 directory[ctx.Guild.Id] = "";
+
                 await pcm.DisposeAsync();
             }
             connection.Disconnect();
 
         }
+
+        /*[SlashCommand("skip", "Pule a musica atual")]
+        public async Task Skip(InteractionContext ctx)
+        {
+            MusicSkipped(this, ctx.Guild.Id);
+            await ctx.CreateResponseAsync("Musica pulada");
+        }*/
     }
 }

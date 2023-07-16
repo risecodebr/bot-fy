@@ -1,9 +1,8 @@
-﻿using bot_fy.Commands;
-using bot_fy.Discord;
+﻿using bot_fy.Discord;
+using bot_fy.Discord.Extensions;
 using bot_fy.Service;
 using bot_fy.Utils;
 using DSharpPlus;
-using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.Logging;
@@ -17,9 +16,9 @@ namespace bot_fy
 
         public static async Task Main()
         {
+            Log.Logger = new LoggerConfiguration().ConfigureLogger();
             await BotService.CreatePathsAsync();
 
-            Log.Logger = new LoggerConfiguration().ConfigureLogger();
 
             DiscordConfiguration cfg = new()
             {
@@ -33,7 +32,7 @@ namespace bot_fy
             Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
             VoiceNextExtension vnext = Discord.UseVoiceNext();
             SlashCommandsExtension slash = Discord.UseSlashCommands();
-            slash.RegisterCommands<MusicCommand>();
+            slash.RegisterCommands();
             await Discord.ConnectAsync();
             await Task.Delay(-1);
         }
