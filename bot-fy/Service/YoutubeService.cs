@@ -10,6 +10,7 @@ namespace bot_fy.Service
 {
     public class YoutubeService
     {
+        private static Dictionary<string, IVideo> titles = new();
         private readonly YoutubeClient youtube = new();
         private readonly int MAX_RESULTS_PLAYLIST = 200;
 
@@ -31,6 +32,7 @@ namespace bot_fy.Service
             await foreach (VideoSearchResult result in youtube.Search.GetVideosAsync(termo))
             {
                 await channel.SendNewMusicAsync(result);
+                titles.Add(result.Id.Value, result);
                 return new List<string>() { result.Id.Value };
             }
             return new List<string>();
@@ -44,18 +46,28 @@ namespace bot_fy.Service
                 .CollectAsync(MAX_RESULTS_PLAYLIST);
             await channel.SendNewPlaylistAsync(playlist, videosSubset);
 
+            foreach (PlaylistVideo video in videosSubset)
+            {
+                titles.Add(video.Id, video);
+            }
             return videosSubset.Select(v => v.Id.Value).ToList();
         }
 
         private async Task<List<string>> GetVideosAsync(string link)
         {
             var video = await youtube.Videos.GetAsync(link);
+            titles.Add(video.Id, video);
             return new List<string> { video.Id };
         }
 
         public async Task<Video> GetVideoAsync(string video_id)
         {
             return await youtube.Videos.GetAsync(video_id);
+        }
+
+        public List<IVideo> GetVideosByList(List<string> ids)
+        {
+            return titles.Where(t => ids.Contains(t.Key)).Select(t => t.Value).ToList();
         }
     }
 }

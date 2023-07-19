@@ -1,5 +1,6 @@
 ﻿using bot_fy.Discord.Extensions;
 using bot_fy.Service;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
@@ -79,6 +80,56 @@ namespace bot_fy.Commands
             }
             connection.Disconnect();
 
+        }
+
+        [SlashCommand("shuffle", "Deixa a fila de musicas aleatoria")]
+        public async Task Shuffle(InteractionContext ctx)
+        {
+            if (!track.ContainsKey(ctx.Guild.Id))
+            {
+                await ctx.CreateResponseAsync("Nenhuma musica na fila");
+                return;
+            }
+            track[ctx.Guild.Id] = track[ctx.Guild.Id].Shuffle();
+            await ctx.CreateResponseAsync("Fila embaralhada");
+        }
+
+        [SlashCommand("queue", "Mostra a fila de musicas")]
+        public async Task Queue(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync("Buscando...");
+            if (!track.ContainsKey(ctx.Guild.Id))
+            {
+                await ctx.CreateResponseAsync("Nenhuma musica na fila");
+                return;
+            }
+            List<string> ids = track[ctx.Guild.Id].Take(5).ToList();
+            List<IVideo> videos = youtubeService.GetVideosByList(ids);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Fila de Musicas",
+                Color = DiscordColor.Green,
+            };
+            int index = 1;
+            foreach (IVideo video in videos)
+            {
+                embed.Description += $"{index} - {Formatter.MaskedUrl(video.Title, new Uri(video.Url))}\n";
+                index++;
+            }
+            await ctx.Channel.SendMessageAsync(embed);
+        }
+
+        [SlashCommand("clear", "Limpa a fila de musicas")]
+        public async Task Clear(InteractionContext ctx)
+        {
+            if (!track.ContainsKey(ctx.Guild.Id))
+            {
+                await ctx.CreateResponseAsync("Nenhuma musica na fila");
+                return;
+            }
+            track[ctx.Guild.Id].Clear();
+            await ctx.CreateResponseAsync("Fila limpa");
         }
 
         /*[SlashCommand("skip", "Pule a musica atual")]
