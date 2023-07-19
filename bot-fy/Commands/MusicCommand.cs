@@ -90,10 +90,7 @@ namespace bot_fy.Commands
                 await ctx.CreateResponseAsync("Nenhuma musica na fila");
                 return;
             }
-            List<string> videos = track[ctx.Guild.Id].ToList();
-            track[ctx.Guild.Id].Clear();
-            videos.Shuffle();
-            videos.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
+            track[ctx.Guild.Id] = track[ctx.Guild.Id].Shuffle();
             await ctx.CreateResponseAsync("Fila embaralhada");
         }
 
