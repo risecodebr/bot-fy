@@ -1,6 +1,6 @@
 ﻿using DSharpPlus.SlashCommands;
 
-namespace bot_fy.Discord.Extensions
+namespace bot_fy.Extensions.Discord
 {
     public static class InteractionContextExtensions
     {

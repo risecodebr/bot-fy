@@ -1,5 +1,6 @@
-﻿using bot_fy.Discord;
-using bot_fy.Discord.Extensions;
+﻿using bot_fy.Commands;
+using bot_fy.Discord;
+using bot_fy.Extensions.Discord;
 using bot_fy.Service;
 using bot_fy.Utils;
 using DSharpPlus;
@@ -18,7 +19,6 @@ namespace bot_fy
         {
             Log.Logger = new LoggerConfiguration().ConfigureLogger();
             await BotService.CreatePathsAsync();
-
 
             DiscordConfiguration cfg = new()
             {

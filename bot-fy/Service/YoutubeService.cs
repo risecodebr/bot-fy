@@ -1,4 +1,4 @@
-﻿using bot_fy.Discord.Extensions;
+﻿using bot_fy.Extensions.Discord;
 using DSharpPlus.Entities;
 using YoutubeExplode;
 using YoutubeExplode.Common;
@@ -10,7 +10,7 @@ namespace bot_fy.Service
 {
     public class YoutubeService
     {
-        private static Dictionary<string, IVideo> titles = new();
+        private static readonly Dictionary<string, IVideo> titles = new();
         private readonly YoutubeClient youtube = new();
         private readonly int MAX_RESULTS_PLAYLIST = 200;
 

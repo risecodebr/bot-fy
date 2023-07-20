@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace bot_fy.Discord.Extensions
+﻿namespace bot_fy.Extensions
 {
-    public static class QueueExtensions
+    public static class LinqExtensions
     {
         public static Queue<T> Shuffle<T>(this IEnumerable<T> list)
         {
@@ -22,6 +16,11 @@ namespace bot_fy.Discord.Extensions
             }
 
             return new Queue<T>(lista);
+        }
+
+        public static TimeSpan Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, TimeSpan?> func)
+        {
+            return new TimeSpan(source.Sum(item => func(item)!.Value!.Ticks));
         }
     }
 }
