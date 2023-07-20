@@ -2,7 +2,7 @@
 using DSharpPlus.SlashCommands;
 using Serilog;
 
-namespace bot_fy.Discord.Extensions
+namespace bot_fy.Extensions.Discord
 {
     public static class SlashCommandsExtensionExtensions
     {
@@ -16,7 +16,7 @@ namespace bot_fy.Discord.Extensions
             }
             slash.RegisterCommands<MusicCommand>(guild_id);
 
-            Log.Information($"Registered commands {((guild_id == null) ? "" : "in guild " + guild_id)}");
+            Log.Information($"Registered commands {(guild_id == null ? "" : "in guild " + guild_id)}");
         }
     }
 }

@@ -1,18 +1,18 @@
-﻿using bot_fy.Discord.Extensions;
+﻿using bot_fy.Extensions;
+using bot_fy.Extensions.Discord;
 using bot_fy.Service;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
-using YoutubeExplode.Playlists;
 using YoutubeExplode.Videos;
 
 namespace bot_fy.Commands
 {
     public class MusicCommand : ApplicationCommandModule
     {
-        private static Dictionary<ulong, Queue<string>> track = new();
-        private static Dictionary<ulong, string> directory = new();
+        private static readonly Dictionary<ulong, Queue<string>> track = new();
+        private static readonly Dictionary<ulong, string> directory = new();
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
 
@@ -21,14 +21,14 @@ namespace bot_fy.Commands
         [SlashCommand("play", "Reproduza sua musica ou playlist")]
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
         {
-            if(!await ctx.ValidateChannels()) return;
+            if (!await ctx.ValidateChannels()) return;
 
             await ctx.CreateResponseAsync("Buscando...");
 
             List<string> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
             if (!videos.Any())
             {
-                await ctx.CreateResponseAsync("Nenhum Video Encontrado"); 
+                await ctx.CreateResponseAsync("Nenhum Video Encontrado");
                 return;
             }
 
@@ -68,15 +68,15 @@ namespace bot_fy.Commands
                 string video_id = track[ctx.Guild.Id].Dequeue();
                 directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video_id}.mp3";
                 await audioService.DownloadAudioAsync(video_id, directory[ctx.Guild.Id]);
-                await ctx.Channel.SendNewMusicPlayAsync(video_id);
+                DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video_id);
 
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
                 await pcm.CopyToAsync(transmit, null);
-                
+
                 File.Delete(directory[ctx.Guild.Id]);
                 directory[ctx.Guild.Id] = "";
-
                 await pcm.DisposeAsync();
+                await message.DeleteAsync();
             }
             connection.Disconnect();
 
