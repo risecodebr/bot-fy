@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using YoutubeExplode;
 using YoutubeExplode.Playlists;
-using YoutubeExplode.Search;
 using YoutubeExplode.Videos;
 
 namespace bot_fy.Discord.Extensions
@@ -15,7 +14,7 @@ namespace bot_fy.Discord.Extensions
             DiscordEmbedBuilder embed = new()
             {
                 Title = video.Title,
-                Description = $"Tempo: `{video.Duration.Value.Minutes}` minutos",
+                Description = $"Tempo: `{video.Duration}` minutos",
                 Color = DiscordColor.Green,
                 Url = video.Url
             };
@@ -32,7 +31,7 @@ namespace bot_fy.Discord.Extensions
                 Url = playlist.Url
             };
             embed.AddField("Quantidade de músicas", videos.Count.ToString());
-            embed.AddField("Duração", $"{videos.Sum(v => v.Duration.Value.TotalMinutes)} minutos");
+            embed.AddField("Duração", $"{new TimeSpan(videos.Sum(r => r.Duration!.Value.Ticks))} minutos");
             embed.WithThumbnail(playlist.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
             return await channel.SendMessageAsync(embed);
         }
@@ -43,7 +42,7 @@ namespace bot_fy.Discord.Extensions
             DiscordEmbedBuilder embed = new()
             {
                 Title = video.Title,
-                Description = $"Tempo: `{video.Duration.Value.Minutes}` minutos",
+                Description = $"Tempo: `{video.Duration}` minutos",
                 Color = DiscordColor.Green,
                 Url = video.Url
             };

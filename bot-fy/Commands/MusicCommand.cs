@@ -68,15 +68,15 @@ namespace bot_fy.Commands
                 string video_id = track[ctx.Guild.Id].Dequeue();
                 directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video_id}.mp3";
                 await audioService.DownloadAudioAsync(video_id, directory[ctx.Guild.Id]);
-                await ctx.Channel.SendNewMusicPlayAsync(video_id);
+                DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video_id);
 
                 Stream pcm = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id]);
                 await pcm.CopyToAsync(transmit, null);
                 
                 File.Delete(directory[ctx.Guild.Id]);
                 directory[ctx.Guild.Id] = "";
-
                 await pcm.DisposeAsync();
+                await message.DeleteAsync();
             }
             connection.Disconnect();
 

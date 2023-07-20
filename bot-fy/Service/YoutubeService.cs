@@ -24,7 +24,7 @@ namespace bot_fy.Service
             {
                 return await GetPlayListVideosAsync(termo, channel);
             }
-            return await GetVideosAsync(termo);
+            return await GetVideosAsync(termo, channel);
         }
 
         public async Task<List<string>> GetVideoByTermAsync(string termo, DiscordChannel channel)
@@ -53,10 +53,11 @@ namespace bot_fy.Service
             return videosSubset.Select(v => v.Id.Value).ToList();
         }
 
-        private async Task<List<string>> GetVideosAsync(string link)
+        private async Task<List<string>> GetVideosAsync(string link, DiscordChannel channel)
         {
             var video = await youtube.Videos.GetAsync(link);
             titles.Add(video.Id, video);
+            await channel.SendNewMusicAsync(video);
             return new List<string> { video.Id };
         }
 
