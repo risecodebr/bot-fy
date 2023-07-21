@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace bot_fy.Discord.Extensions
+﻿namespace bot_fy.Extensions
 {
-    public static class QueueExtensions
+    public static class LinqExtensions
     {
         public static Queue<T> Shuffle<T>(this IEnumerable<T> list)
         {

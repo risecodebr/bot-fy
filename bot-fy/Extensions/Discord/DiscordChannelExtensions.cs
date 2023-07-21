@@ -1,10 +1,9 @@
 ﻿using DSharpPlus.Entities;
 using YoutubeExplode;
 using YoutubeExplode.Playlists;
-using YoutubeExplode.Search;
 using YoutubeExplode.Videos;
 
-namespace bot_fy.Discord.Extensions
+namespace bot_fy.Extensions.Discord
 {
     public static class NotificationsDiscordChannelExtensions
     {
