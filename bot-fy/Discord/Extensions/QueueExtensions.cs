@@ -23,5 +23,20 @@ namespace bot_fy.Discord.Extensions
 
             return new Queue<T>(lista);
         }
+
+        public static TimeSpan Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, TimeSpan?> func)
+        {
+            return new TimeSpan(source.Sum(item => func(item)!.Value!.Ticks));
+        }
+
+        public static string ToStringTime(this TimeSpan timeSpan)
+        {
+            return timeSpan.ToString(timeSpan.TotalHours >= 1 ? @"h\hmm\mss\s" : @"mm\mss\s")!;
+        }
+
+        public static string ToStringTime(this TimeSpan? timeSpan)
+        {
+            return timeSpan!.Value.ToStringTime();
+        }
     }
 }

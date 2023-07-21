@@ -14,11 +14,12 @@ namespace bot_fy.Discord.Extensions
         {
             DiscordEmbedBuilder embed = new()
             {
-                Title = video.Title,
-                Description = $"Tempo: `{video.Duration.Value.Minutes}` minutos",
+                Title = $"Adicionado a fila {video.Title}",
                 Color = DiscordColor.Green,
                 Url = video.Url
             };
+            embed.AddField("Canal", video.Author.ChannelTitle);
+            embed.AddField("Tempo", $"{video.Duration.ToStringTime()}", true);
             embed.WithThumbnail(video.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
             return await channel.SendMessageAsync(embed);
         }
@@ -27,12 +28,12 @@ namespace bot_fy.Discord.Extensions
         {
             DiscordEmbedBuilder embed = new()
             {
-                Title = playlist.Title,
+                Title = $"Adicionado a fila {playlist.Title}",
                 Color = DiscordColor.Green,
                 Url = playlist.Url
             };
             embed.AddField("Quantidade de músicas", videos.Count.ToString());
-            embed.AddField("Duração", $"{videos.Sum(v => v.Duration.Value.TotalMinutes)} minutos");
+            embed.AddField("Duração", $"{videos.Sum(p => p.Duration).ToStringTime()}", true);
             embed.WithThumbnail(playlist.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
             return await channel.SendMessageAsync(embed);
         }
@@ -42,11 +43,13 @@ namespace bot_fy.Discord.Extensions
             Video video = await youtube.Videos.GetAsync(video_id);
             DiscordEmbedBuilder embed = new()
             {
-                Title = video.Title,
-                Description = $"Tempo: `{video.Duration.Value.Minutes}` minutos",
+                Title = $"Tocando {video.Title}",
                 Color = DiscordColor.Green,
                 Url = video.Url
             };
+            embed.AddField("Canal", video.Author.ChannelTitle);
+            embed.AddField("Tempo", $"{video.Duration.ToStringTime()}", true);
+
             embed.WithThumbnail(video.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
             return await channel.SendMessageAsync(embed);
         }
