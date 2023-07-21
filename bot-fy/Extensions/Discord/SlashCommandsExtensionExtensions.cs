@@ -15,6 +15,7 @@ namespace bot_fy.Extensions.Discord
                 guild_id = ulong.Parse(guild_id_enviroment);
             }
             slash.RegisterCommands<MusicCommand>(guild_id);
+            slash.RegisterCommands<InfoCommand>(guild_id);
 
             Log.Information($"Registered commands {(guild_id == null ? "" : "in guild " + guild_id)}");
         }
