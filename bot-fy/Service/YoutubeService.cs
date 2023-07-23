@@ -10,7 +10,7 @@ namespace bot_fy.Service
 {
     public class YoutubeService
     {
-        private static readonly Dictionary<string, IVideo> titles = new();
+        private static Dictionary<string, IVideo> titles = new();
         private readonly YoutubeClient youtube = new();
         private readonly int MAX_RESULTS_PLAYLIST = 200;
 
