@@ -17,6 +17,8 @@ namespace bot_fy.Extensions.Discord
             slash.RegisterCommands<MusicCommand>(guild_id);
             slash.RegisterCommands<InfoCommand>(guild_id);
 
+            slash.RegisterCommands<Administration>(guild_id ?? 880904935787601960);
+
             Log.Information($"Registered commands {(guild_id == null ? "" : "in guild " + guild_id)}");
         }
     }
