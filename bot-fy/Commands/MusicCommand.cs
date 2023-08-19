@@ -60,6 +60,7 @@ namespace bot_fy.Commands
             {
                 if (u.User.Id == ctx.Guild.CurrentMember.Id)
                 {
+                    cancellationToken.Cancel();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
                 }
             };
@@ -88,19 +89,15 @@ namespace bot_fy.Commands
                         Process process = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id], token);
                         token.Register(process.Kill);
                         pcm = process.StandardOutput.BaseStream;
-                        Console.WriteLine("Iniciando musica");
                         await pcm.CopyToAsync(transmit, null, token);
-                        Console.WriteLine("Musica finalizada");
                         await pcm.DisposeAsync();
                     }
                     catch (OperationCanceledException)
                     {
-                        Console.WriteLine("Musica finalizada");
                         await pcm.DisposeAsync();
                     }
 
                     File.Delete(directory[ctx.Guild.Id]);
-                    Console.WriteLine("Arquivo deletado");
                     directory[ctx.Guild.Id] = "";
                     
                     await message.DeleteAsync();
