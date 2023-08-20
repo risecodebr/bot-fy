@@ -1,7 +1,6 @@
 ﻿using bot_fy.Extensions;
 using bot_fy.Extensions.Discord;
 using bot_fy.Service;
-using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
@@ -12,12 +11,13 @@ namespace bot_fy.Commands
 {
     public class MusicCommand : ApplicationCommandModule
     {
-        private static readonly Dictionary<ulong, Queue<string>> track = new();
+        private static readonly Dictionary<ulong, Queue<IVideo>> track = new();
         private static readonly Dictionary<ulong, string> directory = new();
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
 
-        private static event EventHandler<ulong> MusicSkipped;
+        private static event EventHandler<ulong> OnMusicSkipped;
+        private static event EventHandler<ulong> OnMusicStopped;
 
         [SlashCommand("play", "Reproduza sua musica ou playlist")]
         public async Task Play(InteractionContext ctx, [Option("link", "Link da musica, playlist ou mix do Youtube")] string termo)
@@ -26,7 +26,7 @@ namespace bot_fy.Commands
 
             await ctx.CreateResponseAsync("Buscando...");
 
-            List<string> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
+            List<IVideo> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
             if (!videos.Any())
             {
                 await ctx.CreateResponseAsync("Nenhum Video Encontrado");
@@ -35,7 +35,7 @@ namespace bot_fy.Commands
 
             if (!track.ContainsKey(ctx.Guild.Id))
             {
-                track.Add(ctx.Guild.Id, new Queue<string>());
+                track.Add(ctx.Guild.Id, new Queue<IVideo>());
             }
 
             videos.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
@@ -60,16 +60,27 @@ namespace bot_fy.Commands
             {
                 if (u.User.Id == ctx.Guild.CurrentMember.Id)
                 {
+                    track[ctx.Guild.Id].Clear();
                     cancellationToken.Cancel();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
                 }
             };
 
-            MusicSkipped += async (v, g) =>
+            OnMusicSkipped += (v, g) =>
             {
                 if (g == ctx.Guild.Id)
                 {
                     cancellationToken.Cancel();
+                }
+            };
+
+            OnMusicStopped += (v, g) =>
+            {
+                if (g == ctx.Guild.Id)
+                {
+                    cancellationToken.Cancel();
+                    track[g].Clear();
+                    return;
                 }
             };
 
@@ -79,10 +90,10 @@ namespace bot_fy.Commands
                 token = cancellationToken.Token;
                 await Task.Run(async () =>
                 {
-                    string video_id = track[ctx.Guild.Id].Dequeue();
-                    directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video_id}.mp3";
-                    await audioService.DownloadAudioAsync(video_id, directory[ctx.Guild.Id]);
-                    DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video_id);
+                    IVideo video = track[ctx.Guild.Id].Dequeue();
+                    directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video.Id}.mp3";
+                    await audioService.DownloadAudioAsync(video.Id, directory[ctx.Guild.Id]);
+                    DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video.Id);
                     Stream pcm = null;
                     try
                     {
@@ -99,7 +110,7 @@ namespace bot_fy.Commands
 
                     File.Delete(directory[ctx.Guild.Id]);
                     directory[ctx.Guild.Id] = "";
-                    
+
                     await message.DeleteAsync();
                 });
             }
@@ -115,7 +126,7 @@ namespace bot_fy.Commands
                 await ctx.CreateResponseAsync("Nenhuma musica na fila");
                 return;
             }
-            track[ctx.Guild.Id] = track[ctx.Guild.Id].Shuffle();
+            Shuffle(ctx.Guild.Id);
             await ctx.CreateResponseAsync("Fila embaralhada");
         }
 
@@ -123,26 +134,14 @@ namespace bot_fy.Commands
         public async Task Queue(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync("Buscando...");
+
             if (!track.ContainsKey(ctx.Guild.Id))
             {
                 await ctx.CreateResponseAsync("Nenhuma musica na fila");
                 return;
             }
-            List<string> ids = track[ctx.Guild.Id].Take(5).ToList();
-            List<IVideo> videos = youtubeService.GetVideosByList(ids);
 
-            DiscordEmbedBuilder embed = new()
-            {
-                Title = "Fila de Musicas",
-                Color = DiscordColor.Green,
-            };
-            int index = 1;
-            foreach (IVideo video in videos)
-            {
-                embed.Description += $"{index} - {Formatter.MaskedUrl(video.Title, new Uri(video.Url))}\n";
-                index++;
-            }
-            await ctx.Channel.SendMessageAsync(embed);
+            await ctx.Channel.SendPaginatedMusicsAsync(ctx.User, track[ctx.Guild.Id]);
         }
 
         [SlashCommand("clear", "Limpa a fila de musicas")]
@@ -165,8 +164,25 @@ namespace bot_fy.Commands
                 await ctx.CreateResponseAsync("Nenhuma musica na fila");
                 return;
             }
-            MusicSkipped(this, ctx.Guild.Id);
+            Skip(ctx.Guild.Id);
             await ctx.CreateResponseAsync("Musica pulada (eu espero) ");
+        }
+
+        public static void Skip(ulong guildId)
+        {
+            OnMusicSkipped.Invoke(null, guildId);
+        }
+        public static void Stop(ulong guildId)
+        {
+            OnMusicStopped.Invoke(null, guildId);
+        }
+        public static void Shuffle(ulong guildId)
+        {
+            track[guildId] = track[guildId].Shuffle();
+        }
+        public static IEnumerable<IVideo> GetQueue(ulong guildId)
+        {
+            return track[guildId];
         }
     }
 }
