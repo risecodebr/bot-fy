@@ -1,9 +1,10 @@
-﻿using bot_fy.Commands;
-using bot_fy.Discord;
+﻿using bot_fy.Discord;
 using bot_fy.Extensions.Discord;
 using bot_fy.Service;
 using bot_fy.Utils;
 using DSharpPlus;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.Logging;
@@ -24,13 +25,15 @@ namespace bot_fy
             {
                 Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN")!,
                 ReconnectIndefinitely = true,
-                MinimumLogLevel = LogLevel.Debug,
+                MinimumLogLevel = LogLevel.Error,
             };
 
             Discord = new DiscordClient(cfg);
             Discord.SessionCreated += Events.OnSessionCreated;
             Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
+            Discord.ComponentInteractionCreated += Events.OnComponentInteractionCreated;
             VoiceNextExtension vnext = Discord.UseVoiceNext();
+            InteractivityExtension interactivity = Discord.UseInteractivity();
             SlashCommandsExtension slash = Discord.UseSlashCommands();
             slash.RegisterCommands();
             await Discord.ConnectAsync();
