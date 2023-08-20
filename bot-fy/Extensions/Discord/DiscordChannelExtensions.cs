@@ -1,4 +1,8 @@
-﻿using DSharpPlus.Entities;
+﻿using bot_fy.Components;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using YoutubeExplode;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Videos;
@@ -8,6 +12,7 @@ namespace bot_fy.Extensions.Discord
     public static class NotificationsDiscordChannelExtensions
     {
         private static readonly YoutubeClient youtube = new();
+        private static readonly DiscordMessages messages = new();
 
         public static async Task<DiscordMessage> SendNewMusicAsync(this DiscordChannel channel, IVideo video)
         {
@@ -19,7 +24,8 @@ namespace bot_fy.Extensions.Discord
             };
             embed.AddField("Canal", video.Author.ChannelTitle);
             embed.AddField("Tempo", $"{video.Duration.ToStringTime()}", true);
-            embed.WithThumbnail(video.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
+            embed.WithThumbnail(video.Thumbnails.MaxBy(p => p.Resolution.Height)!.Url);
+
             return await channel.SendMessageAsync(embed);
         }
 
@@ -33,7 +39,7 @@ namespace bot_fy.Extensions.Discord
             };
             embed.AddField("Quantidade de músicas", videos.Count.ToString());
             embed.AddField("Duração", $"{videos.Sum(p => p.Duration).ToStringTime()}", true);
-            embed.WithThumbnail(playlist.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
+            embed.WithThumbnail(playlist.Thumbnails.MaxBy(p => p.Resolution.Height)!.Url);
             return await channel.SendMessageAsync(embed);
         }
 
@@ -49,8 +55,38 @@ namespace bot_fy.Extensions.Discord
             embed.AddField("Canal", video.Author.ChannelTitle);
             embed.AddField("Tempo", $"{video.Duration.ToStringTime()}", true);
 
-            embed.WithThumbnail(video.Thumbnails.OrderByDescending(p => p.Resolution.Height).First().Url);
-            return await channel.SendMessageAsync(embed);
+            embed.WithThumbnail(video.Thumbnails.MaxBy(p => p.Resolution.Height)!.Url);
+
+            DiscordMessageBuilder message = messages.GetMessageBuilderWithControls(embed);
+
+            return await channel.SendMessageAsync(message);
+        }
+
+        public static async Task SendPaginatedMusicsAsync(this DiscordChannel channel, DiscordUser user, IEnumerable<IVideo> videos)
+        {
+            int pages_count = videos.Count() / 10;
+
+            List<Page> pages = new();
+
+            for (int i = 0; i < pages_count; i++)
+            {
+                List<IVideo> page = videos.Skip(i * 10).Take(10).ToList();
+
+                DiscordEmbedBuilder embed = new()
+                {
+                    Title = "Fila de Musicas",
+                    Color = DiscordColor.Green,
+                };
+
+                for (int j = 0; j < page.Count; j++)
+                {
+                    embed.Description += $"{(i * 10) + j} - {Formatter.MaskedUrl(page[j].Title, new Uri(page[j].Url))}\n";
+                }
+                embed.WithFooter($"Página {i + 1} de {pages_count} - {videos.Sum(p => p.Duration).ToStringTime()}");
+                pages.Add(new Page("", embed));
+            }
+
+            await channel.SendPaginatedMessageAsync(user, pages);
         }
     }
 }
