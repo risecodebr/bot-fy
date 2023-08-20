@@ -9,16 +9,20 @@ namespace bot_fy.Service
     {
         private readonly YoutubeClient youtube = new();
 
-        public Stream ConvertAudioToPcm(string filePath)
+        public Process ConvertAudioToPcm(string filePath, CancellationToken cancellationToken)
         {
-            var ffmpeg = Process.Start(new ProcessStartInfo
+            Process? ffmpeg = Process.Start(new ProcessStartInfo
             {
                 FileName = GetFfmpeg(),
-                Arguments = $@"-i ""{filePath}"" -ac 2 -f s16le -ar 48000 -loglevel error pipe:1",
+                Arguments = $@"-i ""{filePath}"" -ac 2 -f s16le -ar 48000  pipe:1",
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             });
-            return ffmpeg.StandardOutput.BaseStream;
+            ffmpeg.Exited += (s, e) => ffmpeg.Dispose();
+
+            cancellationToken.Register(ffmpeg.Kill);
+
+            return ffmpeg;
         }
 
         public string GetFfmpeg()

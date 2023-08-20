@@ -19,15 +19,14 @@ namespace bot_fy.Service
                 File.WriteAllBytes("ffmpeg/ffmpeg.exe", file);
                 Log.Information("Downloaded ffmpeg");
             }
-            if (!Directory.Exists("music"))
+            
+            if (Directory.Exists("music"))
             {
-                Directory.CreateDirectory("music");
-                Log.Information("Created music directory");
+                Directory.Delete("music", true);
+                Log.Information("Deleted music directory");
             }
-            foreach (string file in Directory.GetFiles("music"))
-            {
-                File.Delete(file);
-            }
+            Directory.CreateDirectory("music");
+            Log.Information("Created music directory");
             return;
         }
     }
