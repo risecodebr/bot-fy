@@ -14,7 +14,7 @@ namespace bot_fy.Service
             Process? ffmpeg = Process.Start(new ProcessStartInfo
             {
                 FileName = GetFfmpeg(),
-                Arguments = $@"-i ""{filePath}"" -ac 2 -f s16le -ar 48000  pipe:1",
+                Arguments = $@"-i ""{filePath}"" -ac 2 -f s16le -ar 48000 -loglevel error pipe:1",
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             });

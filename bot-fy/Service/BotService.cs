@@ -19,7 +19,7 @@ namespace bot_fy.Service
                 File.WriteAllBytes("ffmpeg/ffmpeg.exe", file);
                 Log.Information("Downloaded ffmpeg");
             }
-            
+
             if (Directory.Exists("music"))
             {
                 Directory.Delete("music", true);
