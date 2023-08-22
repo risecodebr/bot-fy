@@ -56,30 +56,39 @@ namespace bot_fy.Commands
             CancellationTokenSource cancellationToken = new();
             CancellationToken token = cancellationToken.Token;
 
-            connection.UserLeft += async (v, u) =>
+            connection.UserLeft += async (voice, args) =>
             {
-                if (u.User.Id == ctx.Guild.CurrentMember.Id)
+                if (args.User.IsCurrent)
                 {
                     track[ctx.Guild.Id].Clear();
                     cancellationToken.Cancel();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
+                    return;
+                }
+
+                if(voice.TargetChannel.Users.Count == 1 && voice.TargetChannel.Users.All(p => p.IsCurrent))
+                {
+                    track[ctx.Guild.Id].Clear();
+                    cancellationToken.Cancel();
+                    await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
+                    return;
                 }
             };
 
-            OnMusicSkipped += (v, g) =>
+            OnMusicSkipped += (obj, guild_id) =>
             {
-                if (g == ctx.Guild.Id)
+                if (guild_id == ctx.Guild.Id)
                 {
                     cancellationToken.Cancel();
                 }
             };
 
-            OnMusicStopped += (v, g) =>
+            OnMusicStopped += (obj, guild_id) =>
             {
-                if (g == ctx.Guild.Id)
+                if (guild_id == ctx.Guild.Id)
                 {
                     cancellationToken.Cancel();
-                    track[g].Clear();
+                    track[guild_id].Clear();
                     return;
                 }
             };
@@ -115,7 +124,7 @@ namespace bot_fy.Commands
                 });
             }
             connection.Disconnect();
-
+            return;
         }
 
         [SlashCommand("shuffle", "Deixa a fila de musicas aleatoria")]
