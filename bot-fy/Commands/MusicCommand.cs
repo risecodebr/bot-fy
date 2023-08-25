@@ -87,8 +87,8 @@ namespace bot_fy.Commands
             {
                 if (guild_id == ctx.Guild.Id)
                 {
-                    cancellationToken.Cancel();
                     track[guild_id].Clear();
+                    cancellationToken.Cancel();
                     return;
                 }
             };
