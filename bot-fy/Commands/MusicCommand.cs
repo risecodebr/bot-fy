@@ -29,7 +29,7 @@ namespace bot_fy.Commands
             List<IVideo> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
             if (!videos.Any())
             {
-                await ctx.CreateResponseAsync("Nenhum Video Encontrado");
+                await ctx.Channel.SendMessageAsync("Nenhum Video Encontrado");
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace bot_fy.Commands
                     return;
                 }
 
-                if(voice.TargetChannel.Users.Count == 1 && voice.TargetChannel.Users.All(p => p.IsCurrent))
+                if (voice.TargetChannel.Users.Count == 1 && voice.TargetChannel.Users.All(p => p.IsCurrent))
                 {
                     track[ctx.Guild.Id].Clear();
                     cancellationToken.Cancel();

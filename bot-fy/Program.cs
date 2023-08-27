@@ -33,8 +33,9 @@ namespace bot_fy
             Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
             Discord.ComponentInteractionCreated += Events.OnComponentInteractionCreated;
             VoiceNextExtension vnext = Discord.UseVoiceNext();
-            InteractivityExtension interactivity = Discord.UseInteractivity();
             SlashCommandsExtension slash = Discord.UseSlashCommands();
+            slash.SlashCommandErrored += EventsSlash.OnSlashCommandErrored;
+            InteractivityExtension interactivity = Discord.UseInteractivity();
             slash.RegisterCommands();
             await Discord.ConnectAsync();
             await Task.Delay(-1);

@@ -17,7 +17,7 @@ namespace bot_fy.Commands
                 Timestamp = DateTime.Now,
             };
             StringBuilder strings = new();
-            foreach (DiscordGuild guild in ctx.Client.Guilds.Values.OrderBy(p => p.MemberCount))
+            foreach (DiscordGuild guild in ctx.Client.Guilds.Values.OrderByDescending(p => p.MemberCount))
             {
                 strings.AppendLine($"{guild.Name} - ({guild.Id}) - {guild.MemberCount} membros - {guild.CurrentMember.JoinedAt:dd:MM:yyyy}");
             }
