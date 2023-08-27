@@ -13,15 +13,16 @@ namespace bot_fy.Commands
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Servidores",
-                Color = DiscordColor.CornflowerBlue,
+                Color = DiscordColor.Green,
                 Timestamp = DateTime.Now,
             };
             StringBuilder strings = new();
-            foreach (DiscordGuild guild in ctx.Client.Guilds.Values)
+            foreach (DiscordGuild guild in ctx.Client.Guilds.Values.OrderBy(p => p.MemberCount))
             {
                 strings.AppendLine($"{guild.Name} - ({guild.Id}) - {guild.MemberCount} membros - {guild.CurrentMember.JoinedAt:dd:MM:yyyy}");
             }
             embed.WithDescription(strings.ToString());
+
             await ctx.CreateResponseAsync(embed);
         }
     }
