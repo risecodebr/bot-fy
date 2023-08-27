@@ -21,7 +21,6 @@ namespace bot_fy.Discord
             strings.AppendLine($"Usuário: {e.Context.User.Mention} - ({e.Context.User.Id})");
             strings.AppendLine($"Comando: {e.Context.CommandName}");
             strings.AppendLine($"Erro: {e.Exception.Message}\n");
-            strings.AppendLine($"Arquivo: {e.Exception.Source} ({e.Exception.HResult})");
             strings.AppendLine($"Stack: ```{e.Exception.StackTrace}```");
             embed.WithDescription(strings.ToString());
 
