@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using YoutubeExplode;
 using YoutubeExplode.Converter;
+using YoutubeExplode.Exceptions;
 using YoutubeExplode.Videos.Streams;
 
 namespace bot_fy.Service
@@ -45,10 +46,16 @@ namespace bot_fy.Service
 
         private async Task<string> GetAudioUrl(string url)
         {
-            StreamManifest streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
-            IStreamInfo streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-
-            return streamInfo.Url;
+            try
+            {
+                StreamManifest streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
+                IStreamInfo streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                return streamInfo.Url;
+            }
+            catch(VideoUnplayableException)
+            {
+                return await youtube.Videos.Streams.GetHttpLiveStreamUrlAsync(url);
+            }
         }
     }
 }
