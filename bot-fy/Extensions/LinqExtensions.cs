@@ -30,6 +30,10 @@
 
         public static string ToStringTime(this TimeSpan? timeSpan)
         {
+            if (timeSpan!.Value.Ticks == 0)
+            {
+                return "Ao Vivo";
+            }
             return timeSpan!.Value.ToStringTime();
         }
     }
