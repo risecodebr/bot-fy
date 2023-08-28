@@ -9,12 +9,13 @@ namespace bot_fy.Service
     {
         private readonly YoutubeClient youtube = new();
 
-        public Process ConvertAudioToPcm(string filePath, CancellationToken cancellationToken)
+        public async Task<Process> ConvertAudioToPcm(string url_music, CancellationToken cancellationToken)
         {
+            string url = await GetAudioUrl(url_music);
             Process? ffmpeg = Process.Start(new ProcessStartInfo
             {
                 FileName = GetFfmpeg(),
-                Arguments = $@"-i ""{filePath}"" -ac 2 -f s16le -ar 48000 -loglevel error pipe:1",
+                Arguments = $@"-i ""{url}"" -ac 2 -f s16le -ar 48000 -loglevel error -b:a 96k pipe:1",
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             });
@@ -40,6 +41,14 @@ namespace bot_fy.Service
                                 .SetContainer(Container.Mp3)
                                 .SetPreset(ConversionPreset.UltraFast)
                                 .SetFFmpegPath(GetFfmpeg()));
+        }
+
+        private async Task<string> GetAudioUrl(string url)
+        {
+            StreamManifest streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
+            IStreamInfo streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+            return streamInfo.Url;
         }
     }
 }

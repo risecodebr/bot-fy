@@ -12,7 +12,6 @@ namespace bot_fy.Commands
     public class MusicCommand : ApplicationCommandModule
     {
         private static readonly Dictionary<ulong, Queue<IVideo>> track = new();
-        private static readonly Dictionary<ulong, string> directory = new();
         private readonly YoutubeService youtubeService = new();
         private readonly AudioService audioService = new();
 
@@ -100,13 +99,11 @@ namespace bot_fy.Commands
                 await Task.Run(async () =>
                 {
                     IVideo video = track[ctx.Guild.Id].Dequeue();
-                    directory[ctx.Guild.Id] = $"{Directory.GetCurrentDirectory()}\\music\\{ctx.Guild.Id}-{ctx.User.Id}-{video.Id}.mp3";
-                    await audioService.DownloadAudioAsync(video.Id, directory[ctx.Guild.Id]);
                     DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video.Id);
                     Stream pcm = null;
                     try
                     {
-                        Process process = audioService.ConvertAudioToPcm(directory[ctx.Guild.Id], token);
+                        Process process = await audioService.ConvertAudioToPcm(video.Url, token);
                         token.Register(process.Kill);
                         pcm = process.StandardOutput.BaseStream;
                         await pcm.CopyToAsync(transmit, null, token);
@@ -116,9 +113,6 @@ namespace bot_fy.Commands
                     {
                         await pcm.DisposeAsync();
                     }
-
-                    File.Delete(directory[ctx.Guild.Id]);
-                    directory[ctx.Guild.Id] = "";
 
                     await message.DeleteAsync();
                 });
