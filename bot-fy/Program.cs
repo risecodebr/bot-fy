@@ -25,7 +25,7 @@ namespace bot_fy
             {
                 Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN")!,
                 ReconnectIndefinitely = true,
-                MinimumLogLevel = LogLevel.Debug,
+                MinimumLogLevel = LogLevel.Error,
             };
 
             Discord = new DiscordClient(cfg);

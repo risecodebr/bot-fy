@@ -25,7 +25,7 @@ namespace bot_fy.Extensions.Discord
             embed.AddField("Canal", video.Author.ChannelTitle);
             embed.AddField("Tempo", $"{video.Duration.ToStringTime()}", true);
             embed.WithThumbnail(video.Thumbnails.MaxBy(p => p.Resolution.Height)!.Url);
-
+            
             return await channel.SendMessageAsync(embed);
         }
 

@@ -41,7 +41,7 @@ namespace bot_fy.Commands
 
             VoiceNextExtension vnext = ctx.Client.GetVoiceNext();
             VoiceNextConnection connection = vnext.GetConnection(ctx.Guild);
-
+            
             if (connection == null)
             {
                 DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
