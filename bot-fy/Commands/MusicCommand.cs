@@ -65,7 +65,7 @@ namespace bot_fy.Commands
                     return;
                 }
 
-                if (voice.TargetChannel.Users.Count == 1 && voice.TargetChannel.Users.All(p => p.IsCurrent))
+                if (voice.TargetChannel.Users.Count == 1 && voice.TargetChannel.Users.Any(p => p.IsCurrent))
                 {
                     track[ctx.Guild.Id].Clear();
                     cancellationToken.Cancel();
