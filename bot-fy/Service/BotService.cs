@@ -20,13 +20,6 @@ namespace bot_fy.Service
                 Log.Information("Downloaded ffmpeg");
             }
 
-            if (Directory.Exists("music"))
-            {
-                Directory.Delete("music", true);
-                Log.Information("Deleted music directory");
-            }
-            Directory.CreateDirectory("music");
-            Log.Information("Created music directory");
             return;
         }
     }
