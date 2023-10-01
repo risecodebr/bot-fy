@@ -26,16 +26,14 @@ namespace bot_fy.Commands
             await ctx.CreateResponseAsync("Buscando...");
 
             List<IVideo> videos = await youtubeService.GetResultsAsync(termo, ctx.Channel);
+
             if (!videos.Any())
             {
                 await ctx.Channel.SendMessageAsync("Nenhum Video Encontrado");
                 return;
             }
 
-            if (!track.ContainsKey(ctx.Guild.Id))
-            {
-                track.Add(ctx.Guild.Id, new Queue<IVideo>());
-            }
+            track.TryAdd(ctx.Guild.Id, new Queue<IVideo>());
 
             videos.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
 
@@ -69,6 +67,7 @@ namespace bot_fy.Commands
                 {
                     track[ctx.Guild.Id].Clear();
                     cancellationToken.Cancel();
+                    connection.Dispose();
                     await ctx.Channel.SendMessageAsync("Saindo do canal de voz");
                     return;
                 }
@@ -88,6 +87,7 @@ namespace bot_fy.Commands
                 {
                     track[guild_id].Clear();
                     cancellationToken.Cancel();
+                    connection.Dispose();
                     return;
                 }
             };

@@ -7,7 +7,7 @@ namespace bot_fy.Discord
 {
     public class EventsSlash
     {
-        public static async Task OnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
+        public static async Task OnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs args)
         {
             DiscordEmbedBuilder embed = new()
             {
@@ -17,15 +17,17 @@ namespace bot_fy.Discord
             };
 
             StringBuilder strings = new();
-            strings.AppendLine($"Servidor: {e.Context.Guild.Name} - ({e.Context.Guild.Id})");
-            strings.AppendLine($"Usuário: {e.Context.User.Mention} - ({e.Context.User.Id})");
-            strings.AppendLine($"Comando: {e.Context.CommandName}");
-            strings.AppendLine($"Erro: {e.Exception.Message}\n");
-            strings.AppendLine($"Stack: ```{e.Exception.StackTrace}```");
+            strings.AppendLine($"Servidor: {args.Context.Guild.Name} - ({args.Context.Guild.Id})");
+            strings.AppendLine($"Usuário: {args.Context.User.Mention} - ({args.Context.User.Id})");
+            strings.AppendLine($"Comando: {args.Context.CommandName}");
+            strings.AppendLine($"Erro: {args.Exception.Message}\n");
+            strings.AppendLine($"Stack: ```{args.Exception.StackTrace}```");
             embed.WithDescription(strings.ToString());
 
             DiscordChannel channel_error = await sender.Client.GetChannelAsync(1145407009697583134);
             await channel_error.SendMessageAsync(embed);
+
+            await args.Context.Channel.SendMessageAsync("Ocorreu um erro, esse erro foi reportado para o desenvolvedor.");
         }
     }
 }
