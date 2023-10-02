@@ -1,21 +1,19 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:7.0 as build
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
-COPY ["bot-fy.csproj", "."]
 
-RUN dotnet restore bot-fy.csproj
 COPY . .
-RUN dotnet build "bot-fy.csproj" -c Release -o /app/build
-
-FROM build AS publish
-
-RUN dotnet publish "bot-fy.csproj" -c Release -o /app/publish
-FROM mcr.microsoft.com/dotnet/runtime:7.0 AS base
+RUN dotnet restore bot-fy.csproj
+RUN dotnet build "bot-fy.csproj" --no-restore -c Release -o /app/build
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install libopus0 libopus-dev libsodium23 libsodium-dev ffmpeg -y && \
+    apt-get install libopus0 libopus-dev libsodium23 libsodium-dev ffmpeg clang zlib1g-dev -y && \
     apt-get clean -y
 
+RUN dotnet publish "bot-fy.csproj" --no-build -c Release -o /app/publish --self-contained true -r linux-x64
+
+##FROM scratch
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "bot-fy.dll"]
+CMD ls -la
+USER root
+ENTRYPOINT ["/app/publish/bot-fy.so"]
