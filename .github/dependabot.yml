@@ -6,8 +6,6 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 25
     groups:
-      - package-ecosystem: "nuget"
-        directory: "/"
-        packages:
-          - match:
-              dependency_name: "DSharpPlus*"
+      dsharpplus:
+          patterns:
+            - "DSharpPlus*"
