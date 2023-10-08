@@ -6,6 +6,9 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 25
     groups:
-      dsharpplus:
+      DSharpPlus:
           patterns:
             - "DSharpPlus*"
+      YoutubeExplode:
+          patterns:
+            - "YoutubeExplode*"
