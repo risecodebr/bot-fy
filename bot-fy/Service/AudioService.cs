@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using YoutubeExplode;
-using YoutubeExplode.Converter;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Videos.Streams;
 
@@ -34,14 +33,6 @@ namespace bot_fy.Service
                 return $"{Directory.GetCurrentDirectory()}//ffmpeg//ffmpeg.exe";
             }
             return "ffmpeg";
-        }
-
-        public async Task DownloadAudioAsync(string video_id, string filePath)
-        {
-            await youtube.Videos.DownloadAsync(video_id, filePath, o => o
-                                .SetContainer(Container.Mp3)
-                                .SetPreset(ConversionPreset.UltraFast)
-                                .SetFFmpegPath(GetFfmpeg()));
         }
 
         private async Task<string> GetAudioUrl(string url)

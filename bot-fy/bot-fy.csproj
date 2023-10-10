@@ -13,10 +13,9 @@
     <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01831" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01831" />
     <PackageReference Include="DSharpPlus.VoiceNext" Version="5.0.0-nightly-01831" />
-    <PackageReference Include="Serilog" Version="3.1.0-dev-02072" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.2.0-dev-00918" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="YoutubeExplode" Version="6.3.5" />
-    <PackageReference Include="YoutubeExplode.Converter" Version="6.3.5" />
   </ItemGroup>
 
 </Project>
