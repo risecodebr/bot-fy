@@ -1,9 +1,8 @@
 # bot-fy
-
-[![Status](https://img.shields.io/badge/em-desenvolvimento-orange?style=for-the-badge)](#)
 [![Wakatime](https://wakatime.com/badge/user/4ea4d323-1f7a-46e1-a08e-2080b1b95450/project/ba8671e1-4cb4-42fb-9053-60a64792126b.svg?style=for-the-badge)](https://wakatime.com/@eimigueloliveir)
+[![Discord](https://img.shields.io/discord/880904935787601960?style=for-the-badge&label=Discord&color=blue)](https://discord.gg/JWktu3FRh9)
 
-## Comandos Implementados até o momento
+## Comandos disponiveis
 - Play
   - Suporte termos de pesquisa
   - Suporte a Links
