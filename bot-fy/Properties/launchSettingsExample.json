@@ -5,7 +5,9 @@
       "environmentVariables": {
         "DISCORD_TOKEN": "",
         "URL_FFMPEG": "",
-        "GUILD_ID": ""
+        "GUILD_ID": "",
+        "SPOTIFY_CLIENT_ID": "",
+        "SPOTIFY_CLIENT_SECRET": ""
       }
     }
   }
