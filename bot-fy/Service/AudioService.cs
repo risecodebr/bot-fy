@@ -15,7 +15,7 @@ namespace bot_fy.Service
             Process? ffmpeg = Process.Start(new ProcessStartInfo
             {
                 FileName = GetFfmpeg(),
-                Arguments = $@"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -i ""{url}"" -ac 2 -f s16le -ar 48000 -loglevel error -b:a 96k pipe:1",
+                Arguments = $@"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -i ""{url}"" -ac 2 -f s16le -ar 48000 -b:a 96k pipe:1",
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             });
