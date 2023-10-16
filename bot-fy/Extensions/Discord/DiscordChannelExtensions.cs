@@ -3,6 +3,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using SpotifyAPI.Web;
 using YoutubeExplode;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Videos;
@@ -40,6 +41,19 @@ namespace bot_fy.Extensions.Discord
             embed.AddField("Quantidade de músicas", videos.Count.ToString());
             embed.AddField("Duração", $"{videos.Sum(p => p.Duration).ToStringTime()}", true);
             embed.WithThumbnail(playlist.Thumbnails.MaxBy(p => p.Resolution.Height)!.Url);
+            return await channel.SendMessageAsync(embed);
+        }
+
+        public static async Task<DiscordMessage> SendNewPlaylistSpotify(this DiscordChannel channel, FullPlaylist playlist)
+        {
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = $"Adicionado a fila {playlist.Name}",
+                Color = DiscordColor.Green,
+                Url = playlist.ExternalUrls["spotify"]
+            };
+            embed.AddField("Quantidade de músicas", playlist.Tracks.Total.ToString());
+            embed.WithThumbnail(playlist.Images.MaxBy(p => p.Height)!.Url);
             return await channel.SendMessageAsync(embed);
         }
 

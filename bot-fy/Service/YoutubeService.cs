@@ -1,10 +1,12 @@
 ﻿using bot_fy.Extensions.Discord;
 using DSharpPlus.Entities;
+using SpotifyAPI.Web;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Search;
 using YoutubeExplode.Videos;
+using System.Linq;
 
 namespace bot_fy.Service
 {
@@ -15,6 +17,10 @@ namespace bot_fy.Service
 
         public async Task<List<IVideo>> GetResultsAsync(string termo, DiscordChannel channel)
         {
+            if(termo.Contains("spotify.com/playlist/"))
+            {
+                return await GetPlaylistSpotify(termo, channel);
+            }
             if (!termo.Contains("youtu.be/") && !termo.Contains("youtube.com"))
             {
                 return await GetVideoByTermAsync(termo, channel);
@@ -57,7 +63,51 @@ namespace bot_fy.Service
             return new List<IVideo> { video };
         }
 
-        public async Task<IVideo> GetVideoAsync(string video_id)
+        private async Task<List<IVideo>> GetPlaylistSpotify(string link, DiscordChannel channel)
+        {
+            var spotifyAuth = new ClientCredentialsRequest(Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID")!, Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET")!);
+            var spotifyResponse = await new OAuthClient().RequestToken(spotifyAuth);
+
+            string spotifyAccessToken = spotifyResponse.AccessToken;
+            var spotify = new SpotifyClient(spotifyAccessToken);
+
+            string playlistId = link.Split("/").Last();
+            playlistId = playlistId.Split("?").First();
+
+            FullPlaylist playlist = await spotify.Playlists.Get(playlistId);
+            var playlistTracks = await spotify.Playlists.GetItems(playlistId);
+
+            List<string> musics = new();
+            musics.AddRange(from FullTrack track in playlistTracks.Items!.Select(item => item.Track) select $"{track.Name} - {track.Artists.First().Name}");
+
+            await channel.SendNewPlaylistSpotify(playlist);
+
+            List<IVideo> videos = new();
+            var tasks = musics.Select(music =>
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await foreach (var result in youtube.Search.GetVideosAsync(music))
+                        {
+                            Console.Write(result.Title);
+                            videos.Add(result);
+                            break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        channel.SendMessageAsync($"Não foi possível encontrar a música {music}");
+                    }
+                })
+            );
+
+            await Task.WhenAll(tasks);
+
+            return videos;
+        }
+
+        public async Task<Video> GetVideoAsync(string video_id)
         {
             return await youtube.Videos.GetAsync(video_id);
         }
