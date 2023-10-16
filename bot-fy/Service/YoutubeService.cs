@@ -17,7 +17,7 @@ namespace bot_fy.Service
 
         public async Task<List<IVideo>> GetResultsAsync(string termo, DiscordChannel channel)
         {
-            if(termo.Contains("spotify.com/"))
+            if(termo.Contains("spotify.com/playlist/"))
             {
                 return await GetPlaylistSpotify(termo, channel);
             }
@@ -97,6 +97,7 @@ namespace bot_fy.Service
                     }
                     catch (Exception e)
                     {
+                        channel.SendMessageAsync($"Não foi possível encontrar a música {music}");
                     }
                 })
             );
