@@ -95,10 +95,7 @@ namespace bot_fy.Service
                             break;
                         }
                     }
-                    catch (Exception e)
-                    {
-                        channel.SendMessageAsync($"Não foi possível encontrar a música {music}");
-                    }
+                    catch { }
                 })
             );
 

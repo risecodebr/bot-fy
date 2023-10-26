@@ -105,6 +105,10 @@ namespace bot_fy.Commands
                     {
                         Process process = await audioService.ConvertAudioToPcm(video.Url, token);
                         token.Register(process.Kill);
+                        process.ErrorDataReceived += (s, e) => {
+                            cancellationToken.Cancel();
+                            Console.WriteLine($"Ocorreu um erro e foi cancelado a reprodução {e.Data}");
+                        };
                         pcm = process.StandardOutput.BaseStream;
                         await pcm.CopyToAsync(transmit, null, token);
                         await pcm.DisposeAsync();
