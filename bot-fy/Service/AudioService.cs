@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using NAudio.Wave;
 using YoutubeExplode;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Videos.Streams;
@@ -9,30 +9,11 @@ namespace bot_fy.Service
     {
         private readonly YoutubeClient youtube = new();
 
-        public async Task<Process> ConvertAudioToPcm(string url_music, CancellationToken cancellationToken)
+        public async Task<WaveStream> ConvertAudioToPcm(string id)
         {
-            string url = await GetAudioUrl(url_music);
-            Process? ffmpeg = Process.Start(new ProcessStartInfo
-            {
-                FileName = GetFfmpeg(),
-                Arguments = $@"-reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -timeout 10000000 -i ""{url}"" -vn -q:a 2 -ac 2 -f s16le -ar 48000 -loglevel error -b:a 96k pipe:1",
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            });
-            ffmpeg.Exited += (s, e) => ffmpeg.Dispose();
+            string url = await GetAudioUrl(id);
 
-            cancellationToken.Register(ffmpeg.Kill);
-
-            return ffmpeg;
-        }
-
-        public string GetFfmpeg()
-        {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                return $"{Directory.GetCurrentDirectory()}//ffmpeg//ffmpeg.exe";
-            }
-            return "ffmpeg";
+            return WaveFormatConversionStream.CreatePcmStream(new MediaFoundationReader(url));
         }
 
         private async Task<string> GetAudioUrl(string url)

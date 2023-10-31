@@ -4,8 +4,7 @@ services:
    bot-fy:
       container_name: bot-fy
       image: bot-fy
-      env_file:
-        - .env
+      env_file: .env
       build: 
           context: ./bot-fy
           dockerfile: docker/Dockerfile

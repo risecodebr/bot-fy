@@ -4,7 +4,7 @@ using bot_fy.Service;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
-using System.Diagnostics;
+using NAudio.Wave;
 using YoutubeExplode.Videos;
 
 namespace bot_fy.Commands
@@ -100,23 +100,14 @@ namespace bot_fy.Commands
                 {
                     IVideo video = track[ctx.Guild.Id].Dequeue();
                     DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video.Id);
-                    Stream pcm = null;
+                    WaveStream pcm = await audioService.ConvertAudioToPcm(video.Url);
                     try
                     {
-                        Process process = await audioService.ConvertAudioToPcm(video.Url, token);
-                        token.Register(process.Kill);
-                        process.ErrorDataReceived += (s, e) => {
-                            cancellationToken.Cancel();
-                            Console.WriteLine($"Ocorreu um erro e foi cancelado a reprodução {e.Data}");
-                        };
-                        pcm = process.StandardOutput.BaseStream;
                         await pcm.CopyToAsync(transmit, null, token);
-                        await pcm.DisposeAsync();
+                        
                     }
-                    catch (OperationCanceledException)
-                    {
-                        await pcm.DisposeAsync();
-                    }
+                    catch (OperationCanceledException) { } 
+                    await pcm.DisposeAsync();
 
                     await message.DeleteAsync();
                 });
