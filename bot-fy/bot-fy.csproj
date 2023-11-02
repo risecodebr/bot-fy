@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-01855" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01855" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01855" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="5.0.0-nightly-01855" />
+    <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-01857" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01857" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01857" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="5.0.0-nightly-01857" />
     <PackageReference Include="Serilog" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.0.0" />
