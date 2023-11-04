@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Serilog;
+using System.Diagnostics;
 using YoutubeExplode;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Videos.Streams;
@@ -12,15 +13,36 @@ namespace bot_fy.Service
         public async Task<Process> ConvertAudioToPcm(string url_music, CancellationToken cancellationToken)
         {
             string url = await GetAudioUrl(url_music);
-            Process? ffmpeg = Process.Start(new ProcessStartInfo
+            ProcessStartInfo processStartInfo = GetProcessStartInfo(url);
+            Process ffmpeg = StartFfmpegProcess(processStartInfo, cancellationToken);
+
+            return ffmpeg;
+        }
+
+        private ProcessStartInfo GetProcessStartInfo(string url)
+        {
+            return new()
             {
                 FileName = GetFfmpeg(),
-                Arguments = $@"-reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -timeout 10000000 -i ""{url}"" -vn -q:a 2 -ac 2 -f s16le -ar 48000 -loglevel error -b:a 96k pipe:1",
+                Arguments = $@"-reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -timeout 10000000 -i ""{url}"" -vn -q:a 2 -ac 2 -f s16le -ar 48000 -b:a 96k pipe:1",
+                UseShellExecute = false,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
-            });
-            ffmpeg.Exited += (s, e) => ffmpeg.Dispose();
+                RedirectStandardError = true,
+            };
+        }
 
+        private Process StartFfmpegProcess(ProcessStartInfo processStartInfo, CancellationToken cancellationToken)
+        {
+            Process ffmpeg = Process.Start(processStartInfo) ?? throw new InvalidOperationException("FFmpeg não foi iniciado");
+
+            ffmpeg.ErrorDataReceived += (s, e) =>
+            {
+                Log.Error(e.Data);
+            };
+
+            //ffmpeg.BeginErrorReadLine();
+            
+            
             cancellationToken.Register(ffmpeg.Kill);
 
             return ffmpeg;

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Codelux.Serilog.Sinks.Discord" Version="1.1.0" />
     <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-01857" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01857" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01857" />

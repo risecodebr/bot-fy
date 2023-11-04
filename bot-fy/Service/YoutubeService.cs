@@ -90,7 +90,6 @@ namespace bot_fy.Service
                     {
                         await foreach (var result in youtube.Search.GetVideosAsync(music))
                         {
-                            Console.Write(result.Title);
                             videos.Add(result);
                             break;
                         }
