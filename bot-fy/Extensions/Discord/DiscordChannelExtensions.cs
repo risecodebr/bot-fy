@@ -50,10 +50,10 @@ namespace bot_fy.Extensions.Discord
             {
                 Title = $"Adicionado a fila {playlist.Name}",
                 Color = DiscordColor.Green,
-                Url = playlist.ExternalUrls["spotify"]
+                Url = playlist.ExternalUrls!["spotify"]
             };
-            embed.AddField("Quantidade de músicas", playlist.Tracks.Total.ToString());
-            embed.WithThumbnail(playlist.Images.MaxBy(p => p.Height)!.Url);
+            embed.AddField("Quantidade de músicas", playlist.Tracks!.Total!.ToString()!);
+            embed.WithThumbnail(playlist.Images!.MaxBy(p => p.Height)!.Url);
             return await channel.SendMessageAsync(embed);
         }
 

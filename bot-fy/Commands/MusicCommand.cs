@@ -4,16 +4,14 @@ using bot_fy.Service;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
-using System.Diagnostics;
+using Serilog;
 using YoutubeExplode.Videos;
 
 namespace bot_fy.Commands
 {
-    public class MusicCommand : ApplicationCommandModule
+    public class MusicCommand(AudioService audioService, YoutubeService youtubeService) : ApplicationCommandModule
     {
         private static readonly Dictionary<ulong, Queue<IVideo>> track = new();
-        private readonly YoutubeService youtubeService = new();
-        private readonly AudioService audioService = new();
 
         private static event EventHandler<ulong> OnMusicSkipped;
         private static event EventHandler<ulong> OnMusicStopped;
@@ -39,17 +37,17 @@ namespace bot_fy.Commands
 
             VoiceNextExtension vnext = ctx.Client.GetVoiceNext();
             VoiceNextConnection connection = vnext.GetConnection(ctx.Guild);
-            
-            if (connection == null)
-            {
-                DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
-                connection = await channel.ConnectAsync();
-            }
-            else
+
+            if (connection is not null)
             {
                 return;
             }
+
+            DiscordChannel channel = ctx.Member.VoiceState?.Channel!;
+            connection = await channel.ConnectAsync();
+
             VoiceTransmitSink transmit = connection.GetTransmitSink();
+
             CancellationTokenSource cancellationToken = new();
             CancellationToken token = cancellationToken.Token;
 
@@ -100,23 +98,25 @@ namespace bot_fy.Commands
                 {
                     IVideo video = track[ctx.Guild.Id].Dequeue();
                     DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(video.Id);
-                    Stream pcm = null;
+
+                    Stream pcm = new MemoryStream();
+
                     try
                     {
-                        Process process = await audioService.ConvertAudioToPcm(video.Url, token);
-                        token.Register(process.Kill);
-                        process.ErrorDataReceived += (s, e) => {
-                            cancellationToken.Cancel();
-                            Console.WriteLine($"Ocorreu um erro e foi cancelado a reprodução {e.Data}");
-                        };
-                        pcm = process.StandardOutput.BaseStream;
-                        await pcm.CopyToAsync(transmit, null, token);
-                        await pcm.DisposeAsync();
+                        Log.Information($"Convertendo {video.Title}");
+
+                        await audioService.ConvertToPcmStreamAsync(video, transmit, token);
+
+                        Log.Information($"Playing {video.Title}");
+                        Log.Information($"Finished playing {video.Title}");
+                        //await pcm.DisposeAsync();
                     }
                     catch (OperationCanceledException)
                     {
-                        await pcm.DisposeAsync();
+                        Log.Information($"Stopped playing {video.Title}");
+                        //await pcm.DisposeAsync();
                     }
+                    Log.Information($"Fim");
 
                     await message.DeleteAsync();
                 });

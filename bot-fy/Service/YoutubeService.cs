@@ -6,14 +6,12 @@ using YoutubeExplode.Common;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Search;
 using YoutubeExplode.Videos;
-using System.Linq;
 
 namespace bot_fy.Service
 {
     public class YoutubeService
     {
         private readonly YoutubeClient youtube = new();
-        private readonly int MAX_RESULTS_PLAYLIST = 200;
 
         public async Task<List<IVideo>> GetResultsAsync(string termo, DiscordChannel channel)
         {
@@ -37,9 +35,9 @@ namespace bot_fy.Service
             await foreach (VideoSearchResult result in youtube.Search.GetVideosAsync(termo))
             {
                 await channel.SendNewMusicAsync(result);
-                return new List<IVideo>() { result };
+                return new() { result };
             }
-            return new List<IVideo>();
+            return new();
         }
 
         private async Task<List<IVideo>> GetPlayListVideosAsync(string link, DiscordChannel channel)
@@ -47,11 +45,11 @@ namespace bot_fy.Service
             Playlist playlist = await youtube.Playlists.GetAsync(link);
             IReadOnlyList<PlaylistVideo> videosSubset = await youtube.Playlists
                 .GetVideosAsync(playlist.Id)
-                .CollectAsync(MAX_RESULTS_PLAYLIST);
+                .CollectAsync();
 
             await channel.SendNewPlaylistAsync(playlist, videosSubset);
 
-            return new List<IVideo>(videosSubset);
+            return new(videosSubset);
         }
 
         private async Task<List<IVideo>> GetVideosAsync(string link, DiscordChannel channel)
@@ -60,37 +58,46 @@ namespace bot_fy.Service
 
             await channel.SendNewMusicAsync(video);
 
-            return new List<IVideo> { video };
+            return new() { video };
         }
 
         private async Task<List<IVideo>> GetPlaylistSpotify(string link, DiscordChannel channel)
         {
-            var spotifyAuth = new ClientCredentialsRequest(Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID")!, Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET")!);
-            var spotifyResponse = await new OAuthClient().RequestToken(spotifyAuth);
+            SpotifyClient spotify = await GetSpotifyClient();
 
-            string spotifyAccessToken = spotifyResponse.AccessToken;
-            var spotify = new SpotifyClient(spotifyAccessToken);
-
-            string playlistId = link.Split("/").Last();
-            playlistId = playlistId.Split("?").First();
+            string playlistId = ParsePlaylistId(link);
 
             FullPlaylist playlist = await spotify.Playlists.Get(playlistId);
-            var playlistTracks = await spotify.Playlists.GetItems(playlistId);
-
-            List<string> musics = new();
-            musics.AddRange(from FullTrack track in playlistTracks.Items!.Select(item => item.Track) select $"{track.Name} - {track.Artists.First().Name}");
-
             await channel.SendNewPlaylistSpotify(playlist);
 
-            List<IVideo> videos = new();
-            var tasks = musics.Select(music =>
+            var playlistTracks = await spotify.Playlists.GetItems(playlistId);
+            var itens = await spotify.PaginateAll(playlistTracks);
+
+            List<string> musics = ConvertSpotifyTrackToTermSearch(itens);
+
+            List<IVideo> videos = await ProcessTracksSpotify(musics);
+
+            return videos;
+        }
+
+        private List<string> ConvertSpotifyTrackToTermSearch(IList<PlaylistTrack<IPlayableItem>> tracks)
+        {
+            return tracks.Select(track => track.Track as FullTrack)
+                .Select(p => $"{p.Name} - {p.Artists[0].Name}")
+                .ToList();
+        }
+
+        private async Task<List<IVideo>> ProcessTracksSpotify(List<string> tracks)
+        {
+            List<IVideo> tracksResult = new();
+            var tasks = tracks.Select(music =>
                 Task.Run(async () =>
                 {
                     try
                     {
                         await foreach (var result in youtube.Search.GetVideosAsync(music))
                         {
-                            videos.Add(result);
+                            tracksResult.Add(result);
                             break;
                         }
                     }
@@ -100,7 +107,26 @@ namespace bot_fy.Service
 
             await Task.WhenAll(tasks);
 
-            return videos;
+            return tracksResult;
+        }
+
+        private string ParsePlaylistId(string link)
+        {
+            string playlistId = link.Split("/").Last();
+            playlistId = playlistId.Split("?").First();
+            return playlistId;
+        }
+
+        private async Task<SpotifyClient> GetSpotifyClient()
+        {
+            var spotifyAuth = new ClientCredentialsRequest(
+                Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID")!, 
+                Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET")!);
+
+            var spotifyResponse = await new OAuthClient().RequestToken(spotifyAuth);
+
+            string spotifyAccessToken = spotifyResponse.AccessToken;
+            return new(spotifyAccessToken);
         }
 
         public async Task<Video> GetVideoAsync(string video_id)

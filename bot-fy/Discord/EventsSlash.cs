@@ -20,9 +20,10 @@ namespace bot_fy.Discord
             strings.AppendLine($"Servidor: {args.Context.Guild.Name} - ({args.Context.Guild.Id})");
             strings.AppendLine($"Usuário: {args.Context.User.Mention} - ({args.Context.User.Id})");
             strings.AppendLine($"Comando: {args.Context.CommandName}");
-            //adicione o tipo de erro
+            strings.AppendLine($"Exception: {args.Exception.GetType()}");
             strings.AppendLine($"Erro: {args.Exception.Message}\n");
             strings.AppendLine($"Stack: ```{args.Exception.StackTrace}```");
+
             embed.WithDescription(strings.ToString());
 
             DiscordChannel channel_error = await sender.Client.GetChannelAsync(1145407009697583134);

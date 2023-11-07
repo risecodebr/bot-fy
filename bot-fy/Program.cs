@@ -1,12 +1,12 @@
 ﻿using bot_fy.Discord;
 using bot_fy.Extensions.Discord;
 using bot_fy.Service;
-using bot_fy.Utils;
 using DSharpPlus;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
@@ -18,7 +18,11 @@ namespace bot_fy
 
         public static async Task Main()
         {
-            Log.Logger = new LoggerConfiguration().ConfigureLogger();
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .CreateLogger();
+
             await BotService.CreatePathsAsync();
 
             DiscordConfiguration cfg = new()
@@ -32,8 +36,14 @@ namespace bot_fy
             Discord.SessionCreated += Events.OnSessionCreated;
             Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
             Discord.ComponentInteractionCreated += Events.OnComponentInteractionCreated;
+
             VoiceNextExtension vnext = Discord.UseVoiceNext();
-            SlashCommandsExtension slash = Discord.UseSlashCommands();
+
+            SlashCommandsExtension slash = Discord.UseSlashCommands(new SlashCommandsConfiguration()
+            {
+                Services = new ServiceCollection().ConfigureServices().BuildServiceProvider(),
+            });
+
             slash.SlashCommandErrored += EventsSlash.OnSlashCommandErrored;
             InteractivityExtension interactivity = Discord.UseInteractivity();
             slash.RegisterCommands();

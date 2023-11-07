@@ -1,74 +1,84 @@
-﻿using Serilog;
+﻿using bot_fy.Extensions;
+using CliWrap;
+using DSharpPlus.VoiceNext;
 using System.Diagnostics;
+using System.IO.Pipes;
+using System.Threading;
 using YoutubeExplode;
 using YoutubeExplode.Exceptions;
+using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
 namespace bot_fy.Service
 {
-    public class AudioService
+    public class AudioService(YoutubeClient youtube)
     {
-        private readonly YoutubeClient youtube = new();
-
-        public async Task<Process> ConvertAudioToPcm(string url_music, CancellationToken cancellationToken)
+        public async Task ConvertToPcmStreamAsync(IVideo video, VoiceTransmitSink destination, CancellationToken cancellationToken)
         {
-            string url = await GetAudioUrl(url_music);
-            ProcessStartInfo processStartInfo = GetProcessStartInfo(url);
-            Process ffmpeg = StartFfmpegProcess(processStartInfo, cancellationToken);
+            PipeTarget toTransmit = CreatePipeTargetToVoiceTransmit(destination);
 
-            return ffmpeg;
+            string input = await GetInputAudio(video, cancellationToken);
+
+            Command command = await GetCommand(video, input, toTransmit, cancellationToken);
+
+            await command.ExecuteAsync(cancellationToken);
+            return;
         }
 
-        private ProcessStartInfo GetProcessStartInfo(string url)
+        private async Task<Command> GetCommand(IVideo video, string input, PipeTarget pipe, CancellationToken cancellationToken)
         {
-            return new()
+            NamedPipeServerStream namedPipeServerStream = new NamedPipeServerStream("ffmpeg", PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            Command command = Cli.Wrap("ffmpeg")
+                .WithArguments(arguments =>
+                {
+                    arguments.Add("-re");
+                    arguments.Add("-i").Add(input);
+                    arguments.Add("-vn");
+                    arguments.Add("-ac").Add("2");
+                    arguments.Add("-f").Add("s16le");
+                    arguments.Add("-ar").Add("48000");
+                    arguments.Add("pipe:1");
+                })
+                .WithStandardOutputPipe(pipe)
+                .WithStandardErrorPipe(PipeTarget.ToDelegate(Console.WriteLine))
+                .WithValidation(CommandResultValidation.None);
+
+            if (!video.IsLive())
             {
-                FileName = GetFfmpeg(),
-                Arguments = $@"-reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -timeout 10000000 -i ""{url}"" -vn -q:a 2 -ac 2 -f s16le -ar 48000 -b:a 96k pipe:1",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
+                Stream stream = await GetAudioStreamAsync(video, cancellationToken);
+                command.WithStandardInputPipe(PipeSource.FromStream(stream));
+            }
+            return command;
         }
 
-        private Process StartFfmpegProcess(ProcessStartInfo processStartInfo, CancellationToken cancellationToken)
+        private async Task<string> GetInputAudio(IVideo video, CancellationToken cancellationToken)
         {
-            Process ffmpeg = Process.Start(processStartInfo) ?? throw new InvalidOperationException("FFmpeg não foi iniciado");
-
-            ffmpeg.ErrorDataReceived += (s, e) =>
+            if (video.IsLive())
             {
-                Log.Error(e.Data);
-            };
-
-            //ffmpeg.BeginErrorReadLine();
+                return await GetAudioUrlLiveStreamAsync(video, cancellationToken);
+            }
             
-            
-            cancellationToken.Register(ffmpeg.Kill);
-
-            return ffmpeg;
+            return "-";
         }
 
-        public string GetFfmpeg()
+        private async Task<Stream> GetAudioStreamAsync(IVideo video, CancellationToken cancellationToken)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                return $"{Directory.GetCurrentDirectory()}//ffmpeg//ffmpeg.exe";
-            }
-            return "ffmpeg";
+            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Id, cancellationToken);
+            var StreamInfo = streamManifest.GetAudioStreams().GetWithHighestBitrate();
+            return await youtube.Videos.Streams.GetAsync(StreamInfo, cancellationToken);
         }
 
-        private async Task<string> GetAudioUrl(string url)
+        private async Task<string> GetAudioUrlLiveStreamAsync(IVideo video, CancellationToken cancellationToken)
         {
-            try
+            return await youtube.Videos.Streams.GetHttpLiveStreamUrlAsync(video.Id, cancellationToken);
+        }
+
+        private PipeTarget CreatePipeTargetToVoiceTransmit(VoiceTransmitSink destination)
+        {
+            return PipeTarget.Create(async (origin, cancellationToken) =>
             {
-                StreamManifest streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
-                IStreamInfo streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-                return streamInfo.Url;
-            }
-            catch (VideoUnplayableException)
-            {
-                return await youtube.Videos.Streams.GetHttpLiveStreamUrlAsync(url);
-            }
+                await origin.CopyToAsync(destination, null, cancellationToken);
+            });
         }
     }
 }

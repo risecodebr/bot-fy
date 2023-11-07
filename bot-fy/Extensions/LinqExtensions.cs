@@ -15,12 +15,12 @@
                 lista[j] = temp;
             }
 
-            return new Queue<T>(lista);
+            return new(lista);
         }
 
         public static TimeSpan Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, TimeSpan?> func)
         {
-            return new TimeSpan(source.Sum(item => func(item)!.Value!.Ticks));
+            return new(source.Sum(x => func(x).HasValue ? func(x)!.Value.Ticks : 0));
         }
 
         public static string ToStringTime(this TimeSpan timeSpan)
