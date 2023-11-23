@@ -4,51 +4,75 @@ using bot_fy.Service;
 using DSharpPlus;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Lavalink;
+using DSharpPlus.Net;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using YoutubeExplode;
 
-namespace bot_fy
+namespace bot_fy;
+
+public class Program
 {
-    public class Program
+    public static DiscordClient? Discord { get; private set; }
+
+    public static async Task Main()
     {
-        public static DiscordClient? Discord { get; private set; }
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .CreateLogger();
 
-        public static async Task Main()
+        await BotService.CreatePathsAsync();
+
+        DiscordConfiguration cfg = new()
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
+            Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN")!,
+            ReconnectIndefinitely = true,
+            MinimumLogLevel = LogLevel.Debug,
+        };
 
-            await BotService.CreatePathsAsync();
+        Discord = new DiscordClient(cfg);
+        Discord.SessionCreated += Events.OnSessionCreated;
+        Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
+        Discord.ComponentInteractionCreated += Events.OnComponentInteractionCreated;
 
-            DiscordConfiguration cfg = new()
-            {
-                Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN")!,
-                ReconnectIndefinitely = true,
-                MinimumLogLevel = LogLevel.Error,
-            };
+        VoiceNextExtension vnext = Discord.UseVoiceNext();
 
-            Discord = new DiscordClient(cfg);
-            Discord.SessionCreated += Events.OnSessionCreated;
-            Discord.GuildDownloadCompleted += Events.OnGuildDownloadCompleted;
-            Discord.ComponentInteractionCreated += Events.OnComponentInteractionCreated;
+        var endpoint = new ConnectionEndpoint
+        {
+            Hostname = "127.0.0.1", // From your server configuration.
+            Port = 2333 // From your server configuration
+        };
 
-            VoiceNextExtension vnext = Discord.UseVoiceNext();
+        var lavalinkConfig = new LavalinkConfiguration
+        {
+            Password = "youshallnotpass", // From your server configuration.
+            RestEndpoint = endpoint,
+            SocketEndpoint = endpoint
+        };
 
-            SlashCommandsExtension slash = Discord.UseSlashCommands(new SlashCommandsConfiguration()
-            {
-                Services = new ServiceCollection().ConfigureServices().BuildServiceProvider(),
-            });
+        var lavalink = Discord.UseLavalink();
 
-            slash.SlashCommandErrored += EventsSlash.OnSlashCommandErrored;
-            InteractivityExtension interactivity = Discord.UseInteractivity();
-            slash.RegisterCommands();
-            await Discord.ConnectAsync();
-            await Task.Delay(-1);
-        }
+        IServiceCollection services = new ServiceCollection();
+        services.AddScoped<AudioService>();
+        services.AddScoped<BotService>();
+        services.AddScoped<YoutubeClient>();
+        services.AddScoped<YoutubeService>();
+
+        SlashCommandsExtension slash = Discord.UseSlashCommands(new SlashCommandsConfiguration()
+        {
+            Services = services.BuildServiceProvider(),
+        });
+
+        slash.SlashCommandErrored += EventsSlash.OnSlashCommandErrored;
+        InteractivityExtension interactivity = Discord.UseInteractivity();
+        slash.RegisterCommands();
+        await Discord.ConnectAsync();
+        await lavalink.ConnectAsync(lavalinkConfig);
+        await Task.Delay(-1);
     }
 }
