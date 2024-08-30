@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\bot-fy\BotFy.csproj" />
+    <ProjectReference Include="..\BotFy\BotFy.csproj" />
   </ItemGroup>
 
   <ItemGroup>
