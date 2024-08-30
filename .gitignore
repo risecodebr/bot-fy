@@ -361,6 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/bot-fy/Properties/launchSettings.json
 /.env
 /update.sh
+/BotFy/Properties/launchSettings.json
