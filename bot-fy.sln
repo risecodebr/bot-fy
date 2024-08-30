@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotFy", "BotFy\BotFy.csproj", "{8930495F-3D1B-488B-852E-3A1A71D5F4FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bot-fy", "bot-fy\bot-fy.csproj", "{8930495F-3D1B-488B-852E-3A1A71D5F4FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens de Solução", "{73A79CD5-97E0-4A43-AB80-26EA7BDE030D}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens
 		update.sh = update.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotFy.Tests", "BotFy.Tests\BotFy.Tests.csproj", "{4F68A797-20ED-43B4-9877-9C8653B57D78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bot-fy-tests", "bot-fy-tests\bot-fy-tests.csproj", "{4F68A797-20ED-43B4-9877-9C8653B57D78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
