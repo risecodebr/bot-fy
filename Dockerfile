@@ -1,14 +1,15 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
 WORKDIR /app
-COPY ["bot-fy.csproj", "."]
+COPY ["bot-fy/bot-fy.csproj", "."]
 
 RUN dotnet restore bot-fy.csproj
 COPY . .
-RUN dotnet build "bot-fy.csproj" -c Release -o /app/build
+RUN dotnet build "bot-fy/bot-fy.csproj" -c Release -o /app/build
+RUN dotnet test
 
 FROM build AS publish
 
-RUN dotnet publish "bot-fy.csproj" -c Release -o /app/publish
+RUN dotnet publish "bot-fy/bot-fy.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
 
 RUN apt-get update -y && \
