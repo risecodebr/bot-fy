@@ -13,11 +13,11 @@
     <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01868" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01868" />
     <PackageReference Include="DSharpPlus.VoiceNext" Version="5.0.0-nightly-01868" />
-    <PackageReference Include="Serilog" Version="4.0.1" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="SpotifyAPI.Web" Version="7.1.1" />
-    <PackageReference Include="YoutubeExplode" Version="6.4.2" />
-    <PackageReference Include="YoutubeExplode.Converter" Version="6.4.2" />
+    <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
+    <PackageReference Include="YoutubeExplode" Version="6.5.2" />
+    <PackageReference Include="YoutubeExplode.Converter" Version="6.5.2" />
   </ItemGroup>
 
 </Project>
