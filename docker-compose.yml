@@ -1,9 +1,8 @@
-﻿version: "3.7"
 name: bot-fy
+
 services:
    bot-fy:
       container_name: bot-fy
-      image: bot-fy
       env_file:
         - .env
       build: 
