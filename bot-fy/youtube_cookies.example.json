@@ -1,0 +1,47 @@
+[
+  {
+    "Name": "HSID",
+    "Value": "SUBSTITUA_PELO_VALOR_DO_SEU_COOKIE_HSID",
+    "Domain": ".youtube.com",
+    "Path": "/",
+    "Secure": true,
+    "HttpOnly": true,
+    "Expires": null
+  },
+  {
+    "Name": "SSID",
+    "Value": "SUBSTITUA_PELO_VALOR_DO_SEU_COOKIE_SSID",
+    "Domain": ".youtube.com",
+    "Path": "/",
+    "Secure": true,
+    "HttpOnly": true,
+    "Expires": null
+  },
+  {
+    "Name": "APISID",
+    "Value": "SUBSTITUA_PELO_VALOR_DO_SEU_COOKIE_APISID",
+    "Domain": ".youtube.com",
+    "Path": "/",
+    "Secure": false,
+    "HttpOnly": false,
+    "Expires": null
+  },
+  {
+    "Name": "SAPISID",
+    "Value": "SUBSTITUA_PELO_VALOR_DO_SEU_COOKIE_SAPISID",
+    "Domain": ".youtube.com",
+    "Path": "/",
+    "Secure": true,
+    "HttpOnly": false,
+    "Expires": null
+  },
+  {
+    "Name": "LOGIN_INFO",
+    "Value": "SUBSTITUA_PELO_VALOR_DO_SEU_COOKIE_LOGIN_INFO",
+    "Domain": ".youtube.com",
+    "Path": "/",
+    "Secure": true,
+    "HttpOnly": true,
+    "Expires": null
+  }
+]

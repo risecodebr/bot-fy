@@ -2,12 +2,43 @@
 using YoutubeExplode;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Videos.Streams;
+using System.Net;
 
 namespace bot_fy.Service
 {
     public class AudioService
     {
-        private readonly YoutubeClient youtube = new();
+        private YoutubeClient youtube;
+        private readonly YoutubeAuthService authService;
+
+        public AudioService()
+        {
+            youtube = new YoutubeClient();
+            authService = new YoutubeAuthService();
+        }
+
+        /// <summary>
+        /// Inicializa o serviço com autenticação se disponível
+        /// </summary>
+        public async Task InitializeAsync()
+        {
+            try
+            {
+                if (await authService.HasValidCookiesAsync())
+                {
+                    var cookies = await authService.GetYoutubeCookiesAsync();
+                    if (cookies.Any())
+                    {
+                        youtube = new YoutubeClient(cookies);
+                        Console.WriteLine("AudioService inicializado com autenticação.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao inicializar AudioService com autenticação: {ex.Message}");
+            }
+        }
 
         public async Task<Process> ConvertAudioToPcm(string url_music, CancellationToken cancellationToken)
         {
@@ -46,6 +77,28 @@ namespace bot_fy.Service
             catch (VideoUnplayableException)
             {
                 return await youtube.Videos.Streams.GetHttpLiveStreamUrlAsync(url);
+            }
+            catch (Exception ex) when (ex.Message.Contains("private") || ex.Message.Contains("unavailable"))
+            {
+                // Tenta com autenticação se disponível
+                try
+                {
+                    if (await authService.HasValidCookiesAsync())
+                    {
+                        var cookies = await authService.GetYoutubeCookiesAsync();
+                        youtube = new YoutubeClient(cookies);
+                        
+                        StreamManifest streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
+                        IStreamInfo streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                        return streamInfo.Url;
+                    }
+                }
+                catch
+                {
+                    // Se mesmo com autenticação falhar, relança a exceção original
+                }
+                
+                throw;
             }
         }
     }
